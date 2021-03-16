@@ -1,6 +1,7 @@
-url = jdbc:mysql://127.0.0.1:3306/wallpaper
+url = jdbc:mysql://127.0.0.1:3306
 user = root
 pass = itcast
+jdbc.driver.name=com.mysql.cj.jdbc.Driver
 ## 可选配置
 # 是否在日志中显示执行的SQL
 showSql = false

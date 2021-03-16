@@ -17,6 +17,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -47,7 +48,7 @@ public class ApiService {
     public static final String DNT;
     public static final String UPGRADE_INSECURE_REQUESTS;
     public static final String HOST;
-    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0000");
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.00");
     private final static int TOTAL_LENGTH = 30;
     static {
         final InputStream is = ApiService.class.getClassLoader()

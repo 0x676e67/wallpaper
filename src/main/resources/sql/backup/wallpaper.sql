@@ -13,6 +13,12 @@
 
  Date: 15/03/2021 22:38:38
 */
+DROP DATABASE wallpaper;
+CREATE DATABASE wallpaper CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE wallpaper;
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;

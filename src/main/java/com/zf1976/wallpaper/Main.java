@@ -6,6 +6,7 @@ import cn.hutool.db.DbUtil;
 import cn.hutool.db.Entity;
 import com.zf1976.wallpaper.enums.PropertiesEnum;
 import com.zf1976.wallpaper.http.ApiService;
+import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -15,7 +16,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -81,20 +81,20 @@ public class Main {
         final String nextPageUrl = baseDocument.getElementsContainingOwnText(PropertiesEnum.NEXT_PAGE.content)
                                                .attr("abs:href");
         // 无下一页时结束
-        if (Objects.equals(nextPageUrl,"") || nextPageUrl == null){
-            Console.log("{}->下载完毕",wallpaperType);
+        if (StringUtil.isBlank(nextPageUrl)){
+            Console.log("{} -> 下载完毕", wallpaperType);
             return;
         }
-
+        // 筛选下一页元素
         final Elements elements = baseDocument.select("[href*=/tupian/]");
-
         // 每一页
         for (Element element : elements) {
             ++index;
             final String contentUrl = element.attr("abs:href");
             final Document downloadDocument = ApiService.getConnection()
-                                                              .url(contentUrl)
-                                                              .get();
+                                                        .url(contentUrl)
+                                                        .get();
+            // 壁纸id
             final String wallpaperId = downloadDocument.getElementsByAttribute(PropertiesEnum.ATTRIBUTE.content)
                                                        .attr(PropertiesEnum.ATTRIBUTE.content);
             // 壁纸未下载，则下载
