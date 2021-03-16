@@ -15,10 +15,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -121,12 +118,16 @@ public class ApiService {
         PRINT_PROGRESS_BAR.setSize(response.bodyBytes().length);
         Console.log("开始下载壁纸：{}", fileName);
         byte[] data = new byte[response.bodyBytes().length];
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(FileUtil.file(doestPath, wallpaperDir, wallpaperType, fileName)));
         int len;
-        int count = 0;
         while ((len = bodyStream.read()) != -1) {
-            count += len;
-            PRINT_PROGRESS_BAR.print(count);
-            FileUtil.writeBytes(data, FileUtil.file(doestPath, wallpaperDir, wallpaperType, fileName), 0, len, false);
+            PRINT_PROGRESS_BAR.printAppend(len);
+            outputStream.write(data, 0, len);
+        }
+        try {
+            Thread.sleep(6000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
         return response.bodyBytes().length;
     }

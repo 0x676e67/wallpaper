@@ -1,9 +1,9 @@
 package com.zf1976.wallpaper.support;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.IoUtil;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -350,7 +350,8 @@ public class PrintProgressBar {
         //获取文件大小
         long contentLengthLong = urlConnection.getContentLengthLong();
         //创建对象并且赋值总大小
-        PrintProgressBar printProgressBar = new PrintProgressBar(contentLengthLong)
+        PrintProgressBar printProgressBar = new PrintProgressBar(contentLengthLong);
+        printProgressBar.setPrint100(false);
                 //自定义配置
 //                .setPrintProgressBar(false)//取消打印进度条
 //                .setPrintSpeed(false)//取消打印速度
@@ -362,11 +363,13 @@ public class PrintProgressBar {
 //                .setPrint100(false)//增加打印次数, 实时监控, 对性能有略微影响(在我的渣渣机子上打印20亿次仅影响10秒)
 //                .setConversion("字节")//自定义单位(此配置需要关闭字节转换才有效果)
                 ;
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(FileUtil.file("/users/mac/desktop/test.ajr")));
         byte[] data = new byte [urlConnection.getContentLength()];
         int len;
         while ((len = inputStream.read(data)) != -1) {
             //使用追加打印
             printProgressBar.printAppend(len);
+            outputStream.write(data,0, len);
         }
 //        int count = 0;
 //        while ((len = inputStream.read(bytes)) != -1) {

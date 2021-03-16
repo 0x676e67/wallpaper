@@ -13,7 +13,7 @@
 
  Date: 16/03/2021 12:18:30
 */
-DROP DATABASE wallpaper;
+DROP DATABASE IF EXISTS wallpaper;
 CREATE DATABASE wallpaper CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE wallpaper;
 
