@@ -115,9 +115,10 @@ public class ApiService {
         final String fileName = getFileName(response);
         InputStream bodyStream = response.bodyStream();
         //文件大小
-        PRINT_PROGRESS_BAR.setSize(response.bodyBytes().length);
+        int size = response.bodyBytes().length;
+        PRINT_PROGRESS_BAR.setSize(size);
         Console.log("开始下载壁纸：{}", fileName);
-        byte[] data = new byte[response.bodyBytes().length];
+        byte[] data = new byte[1024*8];
         OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(FileUtil.file(doestPath, wallpaperDir, wallpaperType, fileName)));
         int len;
         while ((len = bodyStream.read()) != -1) {
