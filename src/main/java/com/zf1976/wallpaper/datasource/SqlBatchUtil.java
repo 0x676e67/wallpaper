@@ -53,7 +53,6 @@ public class SqlBatchUtil {
                     flag = getFlag(sqlList, sb, tempSql, flag);
                 }
             }
-            reader.close();
         } catch (IOException e) {
             e.printStackTrace();
             throw e;

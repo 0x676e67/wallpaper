@@ -1,31 +1,27 @@
 package com.zf1976.wallpaper.http;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.io.StreamProgress;
 import cn.hutool.core.lang.Console;
 import cn.hutool.core.util.ReUtil;
-import cn.hutool.db.Db;
-import cn.hutool.db.Entity;
 import cn.hutool.http.Header;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONUtil;
-import com.zf1976.wallpaper.enums.PropertiesEnum;
 import com.zf1976.wallpaper.enums.TypeEnum;
+import com.zf1976.wallpaper.support.PrintProgressBar;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author mac
@@ -49,13 +45,11 @@ public class ApiService {
     public static final String UPGRADE_INSECURE_REQUESTS;
     public static final String HOST;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.00");
-    private final static int TOTAL_LENGTH = 30;
+    private static final PrintProgressBar PRINT_PROGRESS_BAR = new PrintProgressBar(0);
+
     static {
-        final InputStream is = ApiService.class.getClassLoader()
-                                               .getResourceAsStream("config.properties");
-
+        final InputStream is = ApiService.class.getClassLoader().getResourceAsStream("config.properties");
         HttpRequest.closeCookie();
-
         final Properties properties = new Properties();
         try {
             properties.load(is);
@@ -64,11 +58,9 @@ public class ApiService {
         }
 
         String baseUrl = properties.getProperty("url.base");
-
-        cookie = properties.getProperty(PropertiesEnum.COOKIE.content);
+        cookie = properties.getProperty("Cookie");
         TYPES = new HashSet<>(12);
         TYPE_MAPS = new HashMap<>(12);
-        CONN = Jsoup.connect(baseUrl);
         PROPERTIES = properties;
         BASE_URL = baseUrl;
         BASE_INFO_URL = properties.getProperty("url.base.info");
@@ -80,6 +72,7 @@ public class ApiService {
         DNT = properties.getProperty("header.DNT");
         UPGRADE_INSECURE_REQUESTS = properties.getProperty("Upgrade-Insecure-Requests");
         HOST = properties.getProperty("header.host");
+        CONN = Jsoup.connect(baseUrl);
 
         Document document = null;
         try {
@@ -88,8 +81,7 @@ public class ApiService {
             e.printStackTrace();
         }
 
-        assert document != null;
-        final Elements links = document.select("a[href]");
+        final Elements links = Objects.requireNonNull(document).select("a[href]");
 
         for (TypeEnum value : TypeEnum.values()) {
             TYPES.add(value.description);
@@ -106,12 +98,11 @@ public class ApiService {
     }
 
     public static long saveWallpaper(String wallpaperId,String wallpaperType,int index) throws IOException {
-
-        final String downloadUrl = getDownloadUri(wallpaperId);
-        if (downloadUrl == null || Objects.equals(downloadUrl,"")){
+        final String downloadUri = getDownloadUri(wallpaperId);
+        if (downloadUri == null || Objects.equals(downloadUri,"")){
             return -1L;
         }
-        final HttpResponse response = HttpRequest.get(BASE_URL + downloadUrl)
+        final HttpResponse response = HttpRequest.get(BASE_URL + downloadUri)
                                                  .cookie(cookie)
                                                  .header(Header.ACCEPT, ACCEPT)
                                                  .header(Header.ACCEPT_ENCODING, ACCEPT_ENCODING)
@@ -125,36 +116,19 @@ public class ApiService {
         final String doestPath = System.getProperty("user.home");
         final String wallpaperDir = PROPERTIES.getProperty("wallpaper.file.name");
         final String fileName = getFileName(response);
-        final int size = response.bodyBytes().length;
-        return response.writeBody(FileUtil.getOutputStream(FileUtil.file(doestPath,
-                                                                         wallpaperDir,
-                                                                         wallpaperType,
-                                                                         fileName)), true, new StreamProgress() {
-            @Override
-            public void start() {
-                Console.log("开始下载壁纸:{}\n大小为:{}MB", fileName, DECIMAL_FORMAT.format(size/(float)(1024*1024)));
-            }
-
-            @Override
-            public void progress(long l) {
-                System.out.print("\r下载进度：" + (l) + "/" + size);
-            }
-
-            @Override
-            public void finish() {
-                try {
-                    Db.use().insert(Entity.create("index_entity")
-                                          .set("data_id",wallpaperId)
-                                          .set("name",fileName)
-                                          .set("type",wallpaperType)
-                                          .set("index",index));
-                    Console.log("下载完毕!");
-                    TimeUnit.MILLISECONDS.sleep(10000);
-                } catch (InterruptedException | SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        InputStream bodyStream = response.bodyStream();
+        //文件大小
+        PRINT_PROGRESS_BAR.setSize(response.bodyBytes().length);
+        Console.log("开始下载壁纸：{}", fileName);
+        byte[] data = new byte[response.bodyBytes().length];
+        int len;
+        int count = 0;
+        while ((len = bodyStream.read()) != -1) {
+            count += len;
+            PRINT_PROGRESS_BAR.print(count);
+            FileUtil.writeBytes(data, FileUtil.file(doestPath, wallpaperDir, wallpaperType, fileName), 0, len, false);
+        }
+        return response.bodyBytes().length;
     }
 
     public static String getFileName(HttpResponse response) throws UnsupportedEncodingException {
@@ -207,14 +181,5 @@ public class ApiService {
             return str;
         }
     }
-
-    public static void main(String[] args) {
-        final long size = 104857600;
-        for (int i = 0; i <= 104857600; i++) {
-            System.out.println("\r");
-            System.out.print("\r下载进度：" + DECIMAL_FORMAT.format(i/(float)104857600) + "%\t"  + "\t" + (i) + "/" + size);
-        }
-    }
-
 
 }

@@ -1,4 +1,4 @@
-url = jdbc:mysql://127.0.0.1:3306
+url = jdbc:mysql://127.0.0.1:3306/wallpaper
 user = root
 pass = itcast
 jdbc.driver.name=com.mysql.cj.jdbc.Driver

@@ -9,7 +9,7 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
-import com.zf1976.wallpaper.enums.PropertiesEnum;
+import com.zf1976.wallpaper.WallpaperApplication;
 import com.zf1976.wallpaper.http.ApiService;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -48,9 +48,9 @@ public class Test {
         final Elements text = doc.getElementsByClass("page");
         System.out.println(text.text());
         String str = text.text();
-        final String substring = str.substring(str.lastIndexOf("…")+1,str.indexOf(PropertiesEnum.NEXT_PAGE.content));
+        final String substring = str.substring(str.lastIndexOf("…")+1,str.indexOf(WallpaperApplication.NEXT_PAGE));
         System.out.println(substring);
-        System.out.println(str.substring(str.lastIndexOf(PropertiesEnum.NEXT_PAGE.content)));
+        System.out.println(str.substring(str.lastIndexOf(WallpaperApplication.NEXT_PAGE)));
     }
 
     private static void printMedia(Elements media){
@@ -97,7 +97,7 @@ public class Test {
                                                        .getResourceAsStream("config.properties");
         final Properties properties = new Properties();
         properties.load(resourceAsStream);
-        final Object o = properties.get(PropertiesEnum.COOKIE.content);
+        final Object o = properties.get(WallpaperApplication.COOKIE);
         System.out.println((String)o);
 
     }
