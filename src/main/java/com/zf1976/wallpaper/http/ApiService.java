@@ -42,11 +42,11 @@ public class ApiService {
     public static final String UPGRADE_INSECURE_REQUESTS;
     public static final String HOST;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.00");
-    private static final PrintProgressBar PRINT_PROGRESS_BAR = new PrintProgressBar(0);
 
     static {
         final InputStream is = ApiService.class.getClassLoader().getResourceAsStream("config.properties");
         HttpRequest.closeCookie();
+
         final Properties properties = new Properties();
         try {
             properties.load(is);
@@ -116,13 +116,13 @@ public class ApiService {
         InputStream bodyStream = response.bodyStream();
         //文件大小
         int size = response.bodyBytes().length;
-        PRINT_PROGRESS_BAR.setSize(size);
+        PrintProgressBar bar = createProgressBar(size);
         Console.log("开始下载壁纸：{}", fileName);
         byte[] data = new byte[1024*8];
         OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(FileUtil.file(doestPath, wallpaperDir, wallpaperType, fileName)));
         int len;
         while ((len = bodyStream.read()) != -1) {
-            PRINT_PROGRESS_BAR.printAppend(len);
+            bar.printAppend(len);
             outputStream.write(data, 0, len);
         }
         try {
@@ -130,7 +130,11 @@ public class ApiService {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return response.bodyBytes().length;
+        return size;
+    }
+
+    public static PrintProgressBar createProgressBar(int size) {
+        return new PrintProgressBar(size);
     }
 
     public static String getFileName(HttpResponse response) throws UnsupportedEncodingException {

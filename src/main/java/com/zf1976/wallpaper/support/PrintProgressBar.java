@@ -1,7 +1,5 @@
 package com.zf1976.wallpaper.support;
 
-import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.io.IoUtil;
 
 import java.io.*;
 import java.net.URL;
@@ -312,7 +310,9 @@ public class PrintProgressBar {
             stringBuilder.append(String.format("%.2f", num / 1024 / 1024));
             stringBuilder.append("MB");
         }
-        if (printConversion) stringBuilder.append("/s");
+        if (printConversion) {
+            stringBuilder.append("/s");
+        }
     }
     public PrintProgressBar noPrintProgressBar() {
         printProgressBar = false;
@@ -349,6 +349,9 @@ public class PrintProgressBar {
         InputStream inputStream = urlConnection.getInputStream();
         //获取文件大小
         long contentLengthLong = urlConnection.getContentLengthLong();
+        String path = urlConnection.getURL().getPath();
+        int i = path.lastIndexOf("/");
+        String fileName = path.substring(i+1);
         //创建对象并且赋值总大小
         PrintProgressBar printProgressBar = new PrintProgressBar(contentLengthLong);
         printProgressBar.setPrint100(false);
@@ -363,7 +366,7 @@ public class PrintProgressBar {
 //                .setPrint100(false)//增加打印次数, 实时监控, 对性能有略微影响(在我的渣渣机子上打印20亿次仅影响10秒)
 //                .setConversion("字节")//自定义单位(此配置需要关闭字节转换才有效果)
                 ;
-        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(FileUtil.file("/users/mac/desktop/test.ajr")));
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream("/users/ant/desktop/" + fileName));
         byte[] data = new byte [urlConnection.getContentLength()];
         int len;
         while ((len = inputStream.read(data)) != -1) {
