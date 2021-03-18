@@ -9,7 +9,7 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
-import com.zf1976.wallpaper.WallpaperApplication;
+import com.zf1976.wallpaper.Application;
 import com.zf1976.wallpaper.http.ApiService;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -48,9 +48,9 @@ public class Test {
         final Elements text = doc.getElementsByClass("page");
         System.out.println(text.text());
         String str = text.text();
-        final String substring = str.substring(str.lastIndexOf("…")+1,str.indexOf(WallpaperApplication.NEXT_PAGE));
+        final String substring = str.substring(str.lastIndexOf("…")+1,str.indexOf(Application.NEXT_PAGE));
         System.out.println(substring);
-        System.out.println(str.substring(str.lastIndexOf(WallpaperApplication.NEXT_PAGE)));
+        System.out.println(str.substring(str.lastIndexOf(Application.NEXT_PAGE)));
     }
 
     private static void printMedia(Elements media){
@@ -97,7 +97,7 @@ public class Test {
                                                        .getResourceAsStream("config.properties");
         final Properties properties = new Properties();
         properties.load(resourceAsStream);
-        final Object o = properties.get(WallpaperApplication.COOKIE);
+        final Object o = properties.get(Application.COOKIE);
         System.out.println((String)o);
 
     }
@@ -153,8 +153,8 @@ public class Test {
 
 
     @org.junit.Test
-    public void fileTest() throws IOException, InterruptedException {
-        final long size =   ApiService.saveWallpaper("24851", "4K美女",0);
+    public void fileTest() throws Exception {
+        final long size =   ApiService.saveWallpaper("24851", "4K美女");
 
         int GB = 1024 * 1024 * 1024;
         int MB = 1024 * 1024;

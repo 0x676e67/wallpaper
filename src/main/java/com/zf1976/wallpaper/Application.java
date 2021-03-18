@@ -19,12 +19,8 @@ import java.util.concurrent.TimeUnit;
  * @author ant
  * Create by Ant on 2020/8/15 下午7:01
  */
-public class WallpaperApplication {
+public class Application {
 
-    /**
-     * 迭代位置标记
-     */
-    private static int index=0;
     /**
      *  切换cookie标记
      */
@@ -52,16 +48,16 @@ public class WallpaperApplication {
             // 八种类型壁纸
             for (String type : typeMaps.keySet()) {
                 // 获取每种壁纸已经下载的壁纸数量
-                Console.log("开始下载：{}", type);
+                Console.log("Download type at startup:{}", type);
                 download(typeMaps.get(type), type);
             }
-        } catch (IOException | InterruptedException | SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
 
-    private static void download(String baseUrl,String wallpaperType) throws IOException, InterruptedException, SQLException {
+    private static void download(String baseUrl,String wallpaperType) throws Exception {
         final Document baseDocument = ApiService.getConnection()
                                                 .url(baseUrl)
                                                 .get();
@@ -76,7 +72,6 @@ public class WallpaperApplication {
         final Elements elements = baseDocument.select("[href*=/tupian/]");
         // 每一页
         for (Element element : elements) {
-            ++index;
             final String contentUrl = element.attr("abs:href");
             final Document downloadDocument = ApiService.getConnection()
                                                         .url(contentUrl)
@@ -84,29 +79,39 @@ public class WallpaperApplication {
             // 壁纸id
             final String wallpaperId = downloadDocument.getElementsByAttribute(ATTRIBUTE)
                                                        .attr(ATTRIBUTE);
-            // 壁纸未下载，则下载
-            if (Db.use()
-                  .find(Entity.create("index_entity").set("data_id", wallpaperId))
-                  .isEmpty()) {
-                // 被检测到恶意下载 睡眠一天
-               while (true){
-                   if (ApiService.saveWallpaper(wallpaperId, wallpaperType, index) == -1L){
-                       final Properties properties = ApiService.getProperties();
-                       if (flag){
-                           ApiService.setCookie(properties.getProperty("Cookie2"));
-                           Console.log("Cookie 切换为配置文件 -> Cookie2");
-                           flag = false;
-                       }else {
-                           Console.log("Cookie 切换为配置文件 -> Cookie");
-                           ApiService.setCookie(properties.getProperty(COOKIE));
-                           Console.log("被检测恶意下载，睡眠一天");
-                           TimeUnit.DAYS.sleep(1);
-                           flag = true;
-                       }
-                   }else {
-                       break;
-                   }
-               }
+            String wallpaperName = downloadDocument.select("h1")
+                                                   .text();
+            // 更新存库模式
+            if (ApiService.MODE) {
+                if (Db.use().find(Entity.create("mode").set("data_id", wallpaperId)).isEmpty()) {
+                    Db.use()
+                      .insert(Entity.create("mode")
+                                    .set("data_id", wallpaperId)
+                                    .set("file_name", wallpaperName));
+                }
+            } else {
+                // 壁纸未下载，则下载
+                if (Db.use().find(Entity.create("index_entity").set("data_id", wallpaperId)).isEmpty()) {
+                    // 被检测到恶意下载 睡眠一天
+                    while (true){
+                        if (ApiService.saveWallpaper(wallpaperId, wallpaperType) == -1L){
+                            final Properties properties = ApiService.getProperties();
+                            if (flag){
+                                ApiService.setCookie(properties.getProperty("Cookie2"));
+                                Console.log("Cookie 切换为配置文件 -> Cookie2");
+                                flag = false;
+                            }else {
+                                Console.log("Cookie 切换为配置文件 -> Cookie");
+                                ApiService.setCookie(properties.getProperty(COOKIE));
+                                Console.log("Detected malicious download, sleep a day");
+                                TimeUnit.DAYS.sleep(1);
+                                flag = true;
+                            }
+                        }else {
+                            break;
+                        }
+                    }
+                }
             }
         }
         download(nextPageUrl, wallpaperType);

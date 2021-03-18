@@ -1,4 +1,4 @@
-url = jdbc:mysql://127.0.0.1:3306/wallpaper
+url = jdbc:mysql://127.0.0.1:3306/wallpaper?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&autoReconnect=true&failOverReadOnly=false&maxReconnects=10&serverTimezone=GMT
 user = root
 pass = itcast
 jdbc.driver.name=com.mysql.cj.jdbc.Driver
