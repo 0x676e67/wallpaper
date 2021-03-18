@@ -11,7 +11,7 @@ public class SqlTest {
     public static void main(String[] args) {
         try {
             Class<?> aClass = Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306", "root", "itcast");
+            Connection connection = DriverManager.getConnection("jdbc:h2:~/test");
             boolean show_schemas = connection.createStatement()
                                              .execute("show schemas");
         } catch (ClassNotFoundException | SQLException e) {

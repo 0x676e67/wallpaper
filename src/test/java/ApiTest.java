@@ -1,5 +1,9 @@
-import java.text.DecimalFormat;
-import java.util.concurrent.TimeUnit;
+
+import com.zf1976.wallpaper.api.DocumentParser;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 /**
  * @author mac
@@ -8,14 +12,16 @@ import java.util.concurrent.TimeUnit;
 public class ApiTest {
 
     public static void main(String[] args) throws Exception {
-        for (int i = 1; i <= 100; i++) {
-            System.out.print(i + "%");
-            TimeUnit.DAYS.sleep(1);
-            for (int j = 0; j <= String.valueOf(i).length(); j++) {
-                System.out.print("\r");
+        Connection connect = Jsoup.connect("https://wallhaven.cc/");
+        Connection.Response execute = connect.execute();
+        Document homePageDocument = execute.parse();
+        Elements homeTagsDocument = homePageDocument.getElementsByClass("pop-tags");
+        homeTagsDocument.select("link[href]")
+                        .attr("href");
 
-            }
-        }
+        Elements metaDate = DocumentParser.builder()
+                                          .noProxy()
+                                          .getMetaDate("https://wallhaven.cc/", "link[href]");
     }
 
 }
