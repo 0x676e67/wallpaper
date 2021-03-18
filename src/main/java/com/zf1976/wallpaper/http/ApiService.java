@@ -1,6 +1,7 @@
 package com.zf1976.wallpaper.http;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.lang.Console;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.db.Db;
@@ -18,6 +19,8 @@ import org.jsoup.select.Elements;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -124,7 +127,7 @@ public class ApiService {
         try (InputStream bodyStream = response.bodyStream();
              OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(wallpaperFile))
         ){
-            byte[] data = new byte[1024*8];
+            byte[] data = new byte[4 * 1024];
             int len;
             startTime= System.currentTimeMillis();
             while ((len = bodyStream.read(data)) != -1) {
