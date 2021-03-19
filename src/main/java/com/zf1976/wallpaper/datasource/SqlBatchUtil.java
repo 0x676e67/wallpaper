@@ -105,9 +105,9 @@ public class SqlBatchUtil {
     }
 
     public static void main(String[] args) {
-        InputStream resourceAsStream = SqlBatchUtil.class.getClassLoader().getResourceAsStream("sql/backup/wallpaper.sql");
-        if (runSqlByReadFileContent(resourceAsStream)) {
-            System.out.println("execute complete...");
+        InputStream dbResource = SqlBatchUtil.class.getClassLoader().getResourceAsStream("sql/db.sql");
+        if (runSqlByReadFileContent(dbResource)) {
+            System.out.println("db create complete...");
         }
     }
 }

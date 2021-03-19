@@ -42,7 +42,7 @@ public class ApiService {
     public static final String DNT;
     public static final String UPGRADE_INSECURE_REQUESTS;
     public static final String HOST;
-    public static final Boolean MODE;
+    public static final Boolean STORE;
 
     static {
         final InputStream is = ApiService.class.getClassLoader().getResourceAsStream("config.properties");
@@ -71,7 +71,7 @@ public class ApiService {
         UPGRADE_INSECURE_REQUESTS = properties.getProperty("Upgrade-Insecure-Requests");
         HOST = properties.getProperty("header.host");
         CONN = Jsoup.connect(baseUrl);
-        MODE = Boolean.valueOf(properties.getProperty("mode"));
+        STORE = Boolean.valueOf(properties.getProperty("store"));
         Document document = null;
         try {
             document = CONN.get();
