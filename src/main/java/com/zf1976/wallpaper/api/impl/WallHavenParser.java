@@ -20,35 +20,93 @@ public class WallHavenParser extends Parser {
         super(builder);
     }
 
-    public Elements selectHomePageLatest(){
-        return this.selectByClass("latest");
+    /**
+     * 获取首页latest元素
+     *
+     * @date 2021-03-20 23:23:15
+     * @return org.jsoup.nodes.Element
+     */
+    public Element selectHomePageLatest() {
+        return this.selectByClass("latest").first();
     }
 
-    public Elements selectHomePageTopList(){
-        return this.selectByClass("toplist");
+    /**
+     * 获取首页排行榜元素
+     *
+     * @date 2021-03-20 23:20:59
+     * @return org.jsoup.nodes.Element
+     */
+    public Element selectHomePageTopList() {
+        return this.selectByClass("toplist").first();
     }
 
-    public Elements selectHomePageRandom(){
-        return this.selectByClass("random");
+    /**
+     * 获取首页随机元素
+     *
+     * @date 2021-03-20 23:18:50
+     * @return org.jsoup.nodes.Element
+     */
+    public Element selectHomePageRandom(){
+        return this.selectByClass("random").first();
     }
 
+    /**
+     * 获取MoreTags
+     *
+     * @date 2021-03-20 23:18:36
+     * @return org.jsoup.nodes.Element
+     */
     public Element selectHomePageMoreTags(){
         return this.selectHomePageTags().last();
     }
 
-    private Elements selectByClass(String clazz) {
-        return this.document().getElementsByClass(clazz);
+    /**
+     * 获取首页活跃元素
+     *
+     * @date 2021-03-20 23:43:58
+     * @return org.jsoup.select.Elements
+     */
+    public Elements selectHomePageFeatRow() {
+        return this.selectByClass("feat-row")
+                   .select(JsoupConstants.A_HREF);
+    }
+
+    /**
+     * 获取首页tagList，排除MoreTags
+     *
+     * @date 2021-03-20 23:18:20
+     * @return org.jsoup.select.Elements
+     */
+    public Elements selectHomePageTagList() {
+        Elements elements = this.selectHomePageTags();
+        if (elements.remove(selectHomePageMoreTags())) {
+            return elements;
+        }
+        return null;
     }
 
     /**
      * 获取首页tags元素集合
      *
-     * @return elements
+     * @author mac
+     * @date 2021-03-20 23:15:42
+     * @return org.jsoup.select.Elements
      */
-    public Elements selectHomePageTags(){
+    private Elements selectHomePageTags(){
         return this.document()
                    .getElementsByClass("pop-tags")
                    .select(JsoupConstants.A_HREF);
+    }
+
+    /**
+     * 获取包含css
+     *
+     * @date 2021-03-20 23:24:48
+     * @param clazz clazz
+     * @return org.jsoup.select.Elements
+     */
+    private Elements selectByClass(String clazz) {
+        return this.document().getElementsByClass(clazz);
     }
 
     public static class Builder extends BaseBuilder {
@@ -94,6 +152,13 @@ public class WallHavenParser extends Parser {
         }
     }
 
+    /**
+     * 构建
+     *
+     * @author mac
+     * @date 2021-03-20 23:17:37
+     * @return com.zf1976.wallpaper.api.impl.WallHavenParser.Builder
+     */
     public static Builder builder(){
         return new Builder();
     }

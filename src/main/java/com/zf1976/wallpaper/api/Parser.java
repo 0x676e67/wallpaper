@@ -40,7 +40,8 @@ public abstract class Parser implements IParser {
      */
     @Override
     public Connection.Response connect(String url) throws IOException {
-        return this.connection.url(url).response();
+        return this.connection.url(url)
+                              .execute();
     }
 
     /**
@@ -51,7 +52,9 @@ public abstract class Parser implements IParser {
      */
     @Override
     public Document connection(String url) throws IOException {
-        return connection.url(url).response().parse();
+        return connection.url(url)
+                         .execute()
+                         .parse();
     }
 
     /**
