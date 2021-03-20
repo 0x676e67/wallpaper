@@ -1,4 +1,4 @@
-package com.zf1976.wallpaper.constant;
+package com.zf1976.wallpaper.api.constant;
 
 /**
  * @author mac
@@ -11,9 +11,17 @@ public interface JsoupConstants {
      */
     String ATTR_HREF = "href";
     /**
-     * 标签<a></a>
+     * 联结属性
+     */
+    String HREF = "[href]";
+    /**
+     * 标签a
      */
     String LABEL_A = "a";
+    /**
+     * 标签link
+     */
+    String LABEL_LINK = "link";
     /**
      * 返回标签属性href 绝对url
      */

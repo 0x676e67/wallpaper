@@ -15,9 +15,7 @@ public class DbConnectionUtil {
     public static Connection createConnection() throws SQLException, ClassNotFoundException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            return DriverManager.getConnection(DataSourceSetting.URL,
-                    DataSourceSetting.USERNAME,
-                    DataSourceSetting.PASSWORD);
+            return DriverManager.getConnection(DataSourceSetting.URL, DataSourceSetting.USERNAME, DataSourceSetting.PASSWORD);
         } catch (ClassNotFoundException | SQLException e) {
             throw e;
         }
