@@ -1,8 +1,7 @@
-package com.zf1976.wallpaper.api;
+package com.zf1976.wallpaper.api.impl;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 

@@ -50,7 +50,7 @@ public abstract class AbstractParser implements IParser{
      */
     @Override
     public Elements getLabel(String label) throws IOException {
-        return this.connection.get().select(label);
+        return this.parserPattern(label);
     }
 
     /**
@@ -88,7 +88,7 @@ public abstract class AbstractParser implements IParser{
         return this.parserPattern(formatJoin(label, attr));
     }
 
-    protected Elements parserPattern(String pattern) throws IOException {
+    public Elements parserPattern(String pattern) throws IOException {
         return this.connection.get().select(pattern);
     }
 }

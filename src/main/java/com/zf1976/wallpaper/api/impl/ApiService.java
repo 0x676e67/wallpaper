@@ -1,4 +1,4 @@
-package com.zf1976.wallpaper.api;
+package com.zf1976.wallpaper.api.impl;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Console;

@@ -1,8 +1,7 @@
-import com.zf1976.wallpaper.api.DocumentParser;
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
+import com.zf1976.wallpaper.api.impl.WallHavenParser;
+import org.jsoup.nodes.Element;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author mac
@@ -11,17 +10,14 @@ import org.jsoup.select.Elements;
 public class ApiTest {
 
     public static void main(String[] args) throws Exception {
-        Connection connect = Jsoup.connect("https://wallhaven.cc/");
-        Document document = connect.get();
-        Connection.Response execute = connect.execute();
-        Document homePageDocument = execute.parse();
-        Elements homeTagsDocument = homePageDocument.getElementsByClass("pop-tags");
-        String href = homeTagsDocument.select("link[href]")
-                                      .attr("href");
-
-        Elements metaDate = DocumentParser.builder()
-                                          .noProxy()
-                                          .getMetaDate("https://wallhaven.cc/", "link[href]");
+        WallHavenParser wallHavenParser = new WallHavenParser("https://wallhaven.cc/");
+        Set<String> collect = wallHavenParser.selectHomePageTags()
+                                             .stream()
+                                             .map(Element::text)
+                                             .collect(Collectors.toSet());
+        for (String str : collect) {
+            System.out.println(str);
+        }
     }
 
 }
