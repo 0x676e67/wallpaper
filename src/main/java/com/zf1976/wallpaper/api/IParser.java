@@ -70,6 +70,15 @@ public interface IParser {
     Elements parserLabelAttr(String label, String attr) throws IOException;
 
     /**
+     * 解析匹配模式
+     *
+     * @param pattern 模式
+     * @return elements
+     * @throws IOException throws
+     */
+    Elements parserPattern(String pattern) throws IOException;
+
+    /**
      * 格式化联结符
      *
      * @param label 标签

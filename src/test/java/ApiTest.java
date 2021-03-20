@@ -1,7 +1,8 @@
 import com.zf1976.wallpaper.api.impl.WallHavenParser;
-import org.jsoup.nodes.Element;
-import java.util.Set;
-import java.util.stream.Collectors;
+import org.jsoup.Connection;
+import org.jsoup.select.Elements;
+
+import java.net.Proxy;
 
 /**
  * @author mac
@@ -10,14 +11,17 @@ import java.util.stream.Collectors;
 public class ApiTest {
 
     public static void main(String[] args) throws Exception {
-        WallHavenParser wallHavenParser = new WallHavenParser("https://wallhaven.cc/");
-        Set<String> collect = wallHavenParser.selectHomePageTags()
-                                             .stream()
-                                             .map(Element::text)
-                                             .collect(Collectors.toSet());
-        for (String str : collect) {
-            System.out.println(str);
-        }
+
+        WallHavenParser wallHavenParser = WallHavenParser.builder()
+                                                         .method(Connection.Method.GET)
+                                                         .proxy(Proxy.NO_PROXY)
+                                                         .url("https://wallhaven.cc")
+                                                         .build();
+
+        Elements latest = wallHavenParser.selectHomePageLatest();
+        Elements random = wallHavenParser.selectHomePageRandom();
+        Elements topList = wallHavenParser.selectHomePageTopList();
+
     }
 
 }

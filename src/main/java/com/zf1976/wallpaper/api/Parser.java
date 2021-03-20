@@ -1,6 +1,8 @@
 package com.zf1976.wallpaper.api;
 
 import com.zf1976.wallpaper.api.constant.JsoupConstants;
+import com.zf1976.wallpaper.api.impl.WallHavenParser;
+import org.apache.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -12,12 +14,22 @@ import java.io.IOException;
  * @author ant
  * Create by Ant on 2021/3/20 8:24 AM
  */
-public abstract class AbstractParser implements IParser{
+public abstract class Parser implements IParser {
 
+    protected final Logger logger = Logger.getLogger(this.getClass());
     protected final Connection connection;
+    private Document document;
 
-    protected AbstractParser(String url) {
-        this.connection = Jsoup.connect(url);
+    protected Parser(WallHavenParser.Builder builder){
+        this.connection = Jsoup.connect(builder.getUrl())
+                               .method(builder.getMethod())
+                               .timeout(builder.getTimeout())
+                               .proxy(builder.getProxy());
+        try {
+             document = this.connection.execute().parse();
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
     }
 
     /**
@@ -88,7 +100,27 @@ public abstract class AbstractParser implements IParser{
         return this.parserPattern(formatJoin(label, attr));
     }
 
+    /**
+     * 解析匹配模式
+     *
+     * @param pattern 模式
+     * @return elements
+     * @throws IOException throws
+     */
+    @Override
     public Elements parserPattern(String pattern) throws IOException {
-        return this.connection.get().select(pattern);
+        return this.document.select(pattern);
+    }
+
+    /**
+     * 获取当前链接对象
+     * @return connection
+     */
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public Document document(){
+        return this.document;
     }
 }
