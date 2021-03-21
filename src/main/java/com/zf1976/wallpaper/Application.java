@@ -3,7 +3,7 @@ package com.zf1976.wallpaper;
 import cn.hutool.core.lang.Console;
 import cn.hutool.db.Db;
 import cn.hutool.db.Entity;
-import com.zf1976.wallpaper.api.impl.ApiService;
+import com.zf1976.wallpaper.api.service.ApiService;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

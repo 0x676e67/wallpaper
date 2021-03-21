@@ -1,7 +1,7 @@
-package com.zf1976.wallpaper.api;
+package com.zf1976.wallpaper.api.support;
 
 import com.zf1976.wallpaper.api.constant.JsoupConstants;
-import com.zf1976.wallpaper.api.impl.WallHavenParser;
+import com.zf1976.wallpaper.api.support.impl.WallHavenParser;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -14,13 +14,13 @@ import java.io.IOException;
  * @author ant
  * Create by Ant on 2021/3/20 8:24 AM
  */
-public abstract class Parser implements IParser {
+public abstract class AbstractParser implements IParser {
 
     protected final Logger logger = Logger.getLogger(this.getClass());
     protected final Connection connection;
     private Document document;
 
-    protected Parser(WallHavenParser.Builder builder){
+    protected AbstractParser(WallHavenParser.Builder builder){
         this.connection = Jsoup.connect(builder.getUrl())
                                .method(builder.getMethod())
                                .timeout(builder.getTimeout())

@@ -1,12 +1,9 @@
 import com.zf1976.wallpaper.api.constant.JsoupConstants;
-import com.zf1976.wallpaper.api.impl.WallHavenParser;
+import com.zf1976.wallpaper.api.support.impl.WallHavenParser;
 import com.zf1976.wallpaper.util.HttpUtil;
 import org.jsoup.Connection;
 import org.jsoup.select.Elements;
 
-import javax.xml.crypto.Data;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Proxy;

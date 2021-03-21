@@ -10,7 +10,7 @@ import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
 import com.zf1976.wallpaper.Application;
-import com.zf1976.wallpaper.api.impl.ApiService;
+import com.zf1976.wallpaper.api.service.ApiService;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

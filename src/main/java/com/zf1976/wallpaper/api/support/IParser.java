@@ -1,4 +1,4 @@
-package com.zf1976.wallpaper.api;
+package com.zf1976.wallpaper.api.support;
 
 import com.zf1976.wallpaper.util.StringUtil;
 import org.jsoup.Connection;

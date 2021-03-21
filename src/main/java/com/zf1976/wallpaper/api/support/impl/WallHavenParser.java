@@ -1,7 +1,7 @@
-package com.zf1976.wallpaper.api.impl;
+package com.zf1976.wallpaper.api.support.impl;
 
 
-import com.zf1976.wallpaper.api.Parser;
+import com.zf1976.wallpaper.api.support.AbstractParser;
 import com.zf1976.wallpaper.api.build.BaseBuilder;
 import com.zf1976.wallpaper.api.constant.JsoupConstants;
 import org.jsoup.Connection;
@@ -14,7 +14,7 @@ import java.net.Proxy;
  * @author mac
  * @date 2021/3/20
  **/
-public class WallHavenParser extends Parser {
+public class WallHavenParser extends AbstractParser {
 
     private WallHavenParser(Builder builder) {
         super(builder);
@@ -157,7 +157,7 @@ public class WallHavenParser extends Parser {
      *
      * @author mac
      * @date 2021-03-20 23:17:37
-     * @return com.zf1976.wallpaper.api.impl.WallHavenParser.Builder
+     * @return com.zf1976.wallpaper.api.support.impl.WallHavenParser.Builder
      */
     public static Builder builder(){
         return new Builder();
