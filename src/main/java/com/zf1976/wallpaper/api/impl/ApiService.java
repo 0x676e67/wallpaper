@@ -101,17 +101,17 @@ public class ApiService {
         if (downloadUri == null || Objects.equals(downloadUri,"")){
             return -1L;
         }
-        final HttpResponse response = HttpRequest.get(BASE_URL + downloadUri)
-                                                 .cookie(cookie)
-                                                 .header(Header.ACCEPT, ACCEPT)
-                                                 .header(Header.ACCEPT_ENCODING, ACCEPT_ENCODING)
-                                                 .header(Header.ACCEPT_LANGUAGE, ACCEPT_LANGUAGE)
-                                                 .header(Header.CACHE_CONTROL, CACHE_CONTROL)
-                                                 .header(Header.CONNECTION, CONNECTION)
-                                                 .header(Header.HOST, HOST)
-                                                 .timeout(20000)
-                                                 .execute(false);
-
+        HttpResponse response = null;
+        response = HttpRequest.get(BASE_URL + downloadUri)
+                              .cookie(cookie)
+                              .header(Header.ACCEPT, ACCEPT)
+                              .header(Header.ACCEPT_ENCODING, ACCEPT_ENCODING)
+                              .header(Header.ACCEPT_LANGUAGE, ACCEPT_LANGUAGE)
+                              .header(Header.CACHE_CONTROL, CACHE_CONTROL)
+                              .header(Header.CONNECTION, CONNECTION)
+                              .header(Header.HOST, HOST)
+                              .timeout(2000)
+                              .execute(false);
         final String doestPath = System.getProperty("user.home");
         final String wallpaperDir = PROPERTIES.getProperty("wallpaper.file.name");
         final String fileName = getFileName(response);

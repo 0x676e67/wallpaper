@@ -2,14 +2,20 @@ package com.zf1976.wallpaper.datasource;
 
 import org.apache.log4j.Logger;
 
+import javax.naming.NameNotFoundException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 零依赖sql备份恢复工具
@@ -23,6 +29,10 @@ public class StrategyBackupUtil {
     public static final String BLANK = "";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public static final String MYSQL_DUMP = "mysqldump --defaults-extra-file=/etc/my.cnf wallpaper";
+
+    public static boolean generatedBackupFile(String fileDirectory) {
+        return generatedBackupFile(Paths.get(fileDirectory).toFile());
+    }
 
     /**
      * 生成备份文件
@@ -39,14 +49,15 @@ public class StrategyBackupUtil {
                     return false;
                 }
                 // 执行备份文件命令
-                InputStream inputStream = executeBackupCmd();
-                if (inputStream == null) {
-                    LOGGER.warn("备份文件命令无效：" + MYSQL_DUMP);
-                    return false;
-                }
-                if (!writeBackupFile(inputStream, backupFile)) {
-                    LOGGER.warn("写出备份文件失败");
-                    return false;
+                try (InputStream  inputStream = executeBackupCmd()) {
+                    if (inputStream == null) {
+                        LOGGER.warn("备份文件命令无效：" + MYSQL_DUMP);
+                        return false;
+                    }
+                    if (!writeBackupFile(inputStream, backupFile)) {
+                        LOGGER.warn("写出备份文件失败");
+                        return false;
+                    }
                 }
                 return true;
             } catch (IOException | InterruptedException exception) {
@@ -63,8 +74,7 @@ public class StrategyBackupUtil {
      * @return stream
      */
     private static InputStream executeBackupCmd() throws IOException, InterruptedException {
-        Process exec = Runtime.getRuntime()
-                              .exec(MYSQL_DUMP);
+        Process exec = Runtime.getRuntime().exec(MYSQL_DUMP);
         if (exec.waitFor() == 0) {
             return exec.getInputStream();
         }
@@ -72,19 +82,20 @@ public class StrategyBackupUtil {
     }
 
     private static boolean writeBackupFile(InputStream inputStream, File backupFile) throws IOException {
-       try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(backupFile))){
-           ;
-           byte[] data = new byte[4*1024];
-           int len;
-           if ((len = inputStream.read(data)) != -1) {
-               outputStream.write(data,0, len);
-           }
-           return true;
-       } catch (IOException ignored) {
-           return false;
-       } finally {
-           inputStream.close();
-       }
+        try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(backupFile))) {
+            byte[] data = new byte[4 * 1024];
+            int len;
+            if ((len = inputStream.read(data)) != -1) {
+                outputStream.write(data, 0, len);
+            }
+            return true;
+        } catch (IOException ignored) {
+            return false;
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        }
     }
 
 
@@ -112,7 +123,7 @@ public class StrategyBackupUtil {
      * @return file
      */
     private static File generationStrategyFile(File directory) throws IOException {
-        File file = new File(directory.getAbsolutePath() + "/" + DATE_FORMAT.format(new Date()) + ".sql");
+        File file = Paths.get(directory.getAbsolutePath(), DATE_FORMAT.format(new Date()) + ".sql").toFile();
         if (file.isFile()) {
             throw new UnsupportedOperationException("file path is not supported");
         }
@@ -159,7 +170,7 @@ public class StrategyBackupUtil {
             List<String> sqlStr = readFileByLines(sqlPath);
             if (sqlStr.size() > 0) {
                 int num = batchDate(sqlStr);
-                if (num > 0){
+                if (num > 0) {
                     System.out.println("execute complete...");
                     return false;
                 } else{
@@ -192,13 +203,15 @@ public class StrategyBackupUtil {
         return flag;
     }
 
-    public static void main(String[] args) throws IOException {
-        InputStream dbResource = StrategyBackupUtil.class.getClassLoader().getResourceAsStream("sql/db.sql");
-        if (runSqlByReadFileContent(dbResource)) {
-            System.out.println("db create complete...");
-        }
-        if (generatedBackupFile(new File(System.getProperty("user.home")+"/desktop"))) {
-            System.out.println();
+    public static void main(String[] args) throws IOException, InterruptedException {
+//        InputStream dbResource = StrategyBackupUtil.class.getClassLoader().getResourceAsStream("sql/db.sql");
+//        if (runSqlByReadFileContent(dbResource)) {
+//            System.out.println("db create complete...");
+//        }
+        if (generatedBackupFile("/Users/mac")) {
+            System.out.println("backup complete...");
         }
     }
+
+
 }
