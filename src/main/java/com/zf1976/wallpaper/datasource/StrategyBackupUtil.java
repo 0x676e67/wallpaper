@@ -2,20 +2,13 @@ package com.zf1976.wallpaper.datasource;
 
 import org.apache.log4j.Logger;
 
-import javax.naming.NameNotFoundException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 零依赖sql备份恢复工具
@@ -25,13 +18,48 @@ import java.util.concurrent.TimeUnit;
 public class StrategyBackupUtil {
 
     private static final Logger LOGGER = Logger.getLogger(StrategyBackupUtil.class);
-    public static final String INDEX_END = ";";
-    public static final String BLANK = "";
+    private static final String INDEX_END = ";";
+    private static final String BLANK = "";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    public static final String MYSQL_DUMP = "mysqldump --defaults-extra-file=/etc/my.cnf wallpaper";
+    private static final String MYSQL_DUMP = "mysqldump --defaults-extra-file=/etc/my.cnf wallpaper";
+    private static final String MYSQL_RECOVER = "mysql --defaults-extra-file=/etc/my.cnf wallpaper < ";
 
     public static boolean generatedBackupFile(String fileDirectory) {
         return generatedBackupFile(Paths.get(fileDirectory).toFile());
+    }
+
+    /**
+     * 备份恢复
+     *
+     * @date 2021-03-21 21:59:28
+     * @param absolutePath 绝对路径
+     * @return boolean
+     */
+    public static boolean recover(String absolutePath) {
+        return recover(Paths.get(absolutePath).toFile());
+    }
+
+    /**
+     * 备份恢复
+     *
+     * @date 2021-03-21 21:59:28
+     * @param sqlFilePath sql文件
+     * @return boolean
+     */
+    public static boolean recover(File sqlFilePath){
+        if(sqlFilePath.exists() && sqlFilePath.canRead() && sqlFilePath.length() > 0){
+            String absolutePath = sqlFilePath.getAbsolutePath();
+            try {
+                Process p = Runtime.getRuntime().exec(new String[]{"bash", "-c", MYSQL_RECOVER + absolutePath});
+                if(p.waitFor() == 0){
+                    LOGGER.info("数据库恢复成功，数据来源 < " + absolutePath);
+                    return true;
+                }
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 
     /**
@@ -49,15 +77,8 @@ public class StrategyBackupUtil {
                     return false;
                 }
                 // 执行备份文件命令
-                try (InputStream  inputStream = executeBackupCmd()) {
-                    if (inputStream == null) {
-                        LOGGER.warn("备份文件命令无效：" + MYSQL_DUMP);
-                        return false;
-                    }
-                    if (!writeBackupFile(inputStream, backupFile)) {
-                        LOGGER.warn("写出备份文件失败");
-                        return false;
-                    }
+                if (executeBackupCmd(backupFile)) {
+                    LOGGER.info("备份数据库成功");
                 }
                 return true;
             } catch (IOException | InterruptedException exception) {
@@ -73,28 +94,38 @@ public class StrategyBackupUtil {
      *
      * @return stream
      */
-    private static InputStream executeBackupCmd() throws IOException, InterruptedException {
+    private static boolean executeBackupCmd(File backupFile) throws IOException, InterruptedException {
         Process exec = Runtime.getRuntime().exec(MYSQL_DUMP);
-        if (exec.waitFor() == 0) {
-            return exec.getInputStream();
+        final BufferedInputStream bufferedInputStream = new BufferedInputStream(exec.getInputStream());
+        if (writeBackupFile(bufferedInputStream, backupFile)) {
+            LOGGER.warn("写出备份文件失败");
+            return false;
         }
-        return null;
+        return exec.waitFor() == 0;
     }
 
-    private static boolean writeBackupFile(InputStream inputStream, File backupFile) throws IOException {
-        try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(backupFile))) {
-            byte[] data = new byte[4 * 1024];
+    /**
+     * 写入备份文件
+     *
+     * @date 2021-03-21 14:17:22
+     * @param bufferedReader 缓冲流
+     * @param backupFile 备份文件
+     * @return boolean
+     */
+    private static boolean writeBackupFile(BufferedInputStream bufferedReader, File backupFile)  {
+        if (bufferedReader == null) {
+            LOGGER.warn("备份文件命令无效：" + MYSQL_DUMP);
+            return true;
+        }
+        try (bufferedReader; BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(backupFile))) {
+            byte[] data = new byte[16*1024];
             int len;
-            if ((len = inputStream.read(data)) != -1) {
+            while ((len = bufferedReader.read(data)) != -1) {
                 outputStream.write(data, 0, len);
             }
-            return true;
-        } catch (IOException ignored) {
             return false;
-        } finally {
-            if (inputStream != null) {
-                inputStream.close();
-            }
+        } catch (IOException ignored) {
+            return true;
         }
     }
 
@@ -204,13 +235,15 @@ public class StrategyBackupUtil {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-//        InputStream dbResource = StrategyBackupUtil.class.getClassLoader().getResourceAsStream("sql/db.sql");
-//        if (runSqlByReadFileContent(dbResource)) {
-//            System.out.println("db create complete...");
-//        }
-        if (generatedBackupFile("/Users/mac")) {
+        InputStream dbResource = StrategyBackupUtil.class.getClassLoader().getResourceAsStream("sql/db.sql");
+        if (runSqlByReadFileContent(dbResource)) {
+            System.out.println("db create complete...");
+        }
+        if (generatedBackupFile("/Users/mac/IdeaProjects/wallpaper/src/main/resources/sql/backup")) {
             System.out.println("backup complete...");
         }
+        recover("/Users/mac/IdeaProjects/wallpaper/src/main/resources/sql/backup/demo.sql");
+
     }
 
 
