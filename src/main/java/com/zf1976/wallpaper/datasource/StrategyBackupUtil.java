@@ -85,6 +85,8 @@ public class StrategyBackupUtil {
                 LOGGER.error("备份数据库失败 : {}" + exception.getMessage());
                 return false;
             }
+        } else {
+            LOGGER.warn("目录：" + fileDirectory + " 不存在");
         }
         return false;
     }
@@ -235,14 +237,14 @@ public class StrategyBackupUtil {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        InputStream dbResource = StrategyBackupUtil.class.getClassLoader().getResourceAsStream("sql/db.sql");
-        if (runSqlByReadFileContent(dbResource)) {
-            System.out.println("db create complete...");
-        }
-        if (generatedBackupFile("/Users/mac/IdeaProjects/wallpaper/src/main/resources/sql/backup")) {
+//        InputStream dbResource = StrategyBackupUtil.class.getClassLoader().getResourceAsStream("sql/db.sql");
+//        if (runSqlByReadFileContent(dbResource)) {
+//            System.out.println("db create complete...");
+//        }
+        if (generatedBackupFile("/Users/mac/Library/Mobile Documents/com~apple~CloudDocs/ideaProjects/wallpaper/src/main/resources/sql/backup")) {
             System.out.println("backup complete...");
         }
-        recover("/Users/mac/IdeaProjects/wallpaper/src/main/resources/sql/backup/demo.sql");
+       // recover("/Users/mac/IdeaProjects/wallpaper/src/main/resources/sql/backup/demo.sql");
 
     }
 

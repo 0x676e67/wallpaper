@@ -4,6 +4,7 @@ import cn.hutool.core.lang.Console;
 import cn.hutool.db.Db;
 import cn.hutool.db.Entity;
 import com.zf1976.wallpaper.api.service.ApiService;
+import com.zf1976.wallpaper.datasource.StrategyBackupUtil;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -11,9 +12,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -125,6 +124,10 @@ public class Application {
                         Console.log("Cookie 切换为配置文件 -> Cookie");
                         ApiService.setCookie(properties.getProperty(COOKIE));
                         Console.log("Detected malicious download, sleep a day");
+                        // 每次下载完毕生成一份备份文件
+                        if (StrategyBackupUtil.generatedBackupFile("/Users/mac/Library/Mobile Documents/com~apple~CloudDocs/ideaProjects/wallpaper/src/main/resources/sql/backup")) {
+                            System.out.println("backup complete...");
+                        }
                         TimeUnit.DAYS.sleep(1);
                         flag = true;
                     }

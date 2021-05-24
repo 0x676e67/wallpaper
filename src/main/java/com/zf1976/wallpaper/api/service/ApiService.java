@@ -17,9 +17,13 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.*;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.Proxy.Type;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author mac
@@ -71,10 +75,16 @@ public class ApiService {
         UPGRADE_INSECURE_REQUESTS = properties.getProperty("Upgrade-Insecure-Requests");
         HOST = properties.getProperty("header.host");
         CONN = Jsoup.connect(baseUrl);
+        // 不需要代理注释一以下两条
+        /**
+         * Proxy proxy = new Proxy(Type.SOCKS, new InetSocketAddress("127.0.0.1", 1086));
+         *         CONN.proxy(proxy);
+         */
         STORE = Boolean.valueOf(properties.getProperty("store"));
         Document document = null;
         try {
             document = CONN.get();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -112,15 +122,21 @@ public class ApiService {
                               .header(Header.HOST, HOST)
                               .timeout(2000)
                               .execute(false);
-        final String doestPath = System.getProperty("user.home");
+        final String doestPath = "/Volumes/Disk";
         final String wallpaperDir = PROPERTIES.getProperty("wallpaper.file.name");
         final String fileName = getFileName(response);
-
         //文件大小
         int size = response.bodyBytes().length;
-        Console.log("Start downloading the wallpaper: {} Size: {}", fileName, getByteConversion(size));
+        Console.log("start downloading the wallpaper: {} Size: {}", fileName, getByteConversion(size));
         File wallpaperFile = FileUtil.file(doestPath, wallpaperDir, wallpaperType, fileName);
         long startTime;
+        if (!wallpaperFile.getParentFile()
+                          .exists()) {
+            if (!wallpaperFile.getParentFile()
+                              .mkdirs()) {
+                System.out.println("create parent file error");
+            }
+        }
         try (InputStream bodyStream = response.bodyStream();
              OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(wallpaperFile))
         ){
@@ -139,8 +155,9 @@ public class ApiService {
             return -1L;
         }
         try {
+            Console.log("disk: " + wallpaperFile.getAbsolutePath());
             printTime(startTime);
-            Thread.sleep(10000);
+            Thread.sleep(6000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -158,14 +175,20 @@ public class ApiService {
         final HashMap<String, Object> form = new HashMap<>(2);
         form.put("t", Math.random());
         form.put("id", wallpaperId);
-        final HttpResponse response = HttpRequest.get(BASE_INFO_URL)
-                                                 .cookie(cookie)
-                                                 .form(form)
-                                                 .timeout(20000)
-                                                 .execute(false);
-        final String body = response.body();
-        final String uri = (String) JSONUtil.parse(body).getByPath("pic");
-        Console.log("下载链接:{}",BASE_URL + uri);
+        final HttpResponse response;
+        String uri = null;
+        try {
+            response = HttpRequest.get(BASE_INFO_URL)
+                                  .cookie(cookie)
+                                  .form(form)
+                                  .timeout(200000)
+                                  .execute(false);
+            final String body = response.body();
+            uri = (String) JSONUtil.parse(body).getByPath("pic");
+            Console.log("download link:{}",BASE_URL + uri);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return uri;
     }
 
@@ -197,7 +220,7 @@ public class ApiService {
         StringBuilder stringBuilder = new StringBuilder();
         //打印时间
         {
-            stringBuilder.append("下载完成，总耗时: ");
+            stringBuilder.append("the download is complete, the total time-consuming: ");
             //总毫秒 转换成秒在 除 转换倍率 ---> 保留两位小数点
             stringBuilder.append(String.format("%.2f", (time + 0.0) / conversion / 1000));
             stringBuilder.append(timeConversion);
