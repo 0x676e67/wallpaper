@@ -7,10 +7,10 @@ package com.zf1976.wallpaper.enums;
 public enum TypeEnum {
 
     //风景 scenery
- //   SCENERY(1,"4K风景"),
+//    SCENERY(1,"4K风景"),
 
     //美女 beauty
-    BEAUTY(2,"4K美女"),
+//    BEAUTY(2,"4K美女"),
 
     //game
     GAME(3,"4K游戏"),
@@ -25,16 +25,16 @@ public enum TypeEnum {
     STAR(6,"4K明星"),
 
     //汽车
-    CAR(7,"4K汽车"),
+//    CAR(7,"4K汽车"),
 
     //动物
     ANIMAL(8,"4K动物"),
 
     //人物
-    FIGURE(9,"4K人物"),
+//    FIGURE(9,"4K人物"),
 
     //美食
- //   GOURMET(10,"4K美食"),
+//    GOURMET(10,"4K美食"),
 
     //宗教
     RELIGION(11,"4K宗教");

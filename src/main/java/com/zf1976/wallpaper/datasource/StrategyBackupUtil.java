@@ -236,17 +236,4 @@ public class StrategyBackupUtil {
         return flag;
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-//        InputStream dbResource = StrategyBackupUtil.class.getClassLoader().getResourceAsStream("sql/db.sql");
-//        if (runSqlByReadFileContent(dbResource)) {
-//            System.out.println("db create complete...");
-//        }
-        if (generatedBackupFile("/Users/mac/Library/Mobile Documents/com~apple~CloudDocs/ideaProjects/wallpaper/src/main/resources/sql/backup")) {
-            System.out.println("backup complete...");
-        }
-       // recover("/Users/mac/IdeaProjects/wallpaper/src/main/resources/sql/backup/demo.sql");
-
-    }
-
-
 }

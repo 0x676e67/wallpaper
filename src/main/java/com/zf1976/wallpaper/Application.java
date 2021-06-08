@@ -20,11 +20,6 @@ import java.util.concurrent.TimeUnit;
  * Create by Ant on 2020/8/15 下午7:01
  */
 public class Application {
-
-    /**
-     *  切换cookie标记
-     */
-    private static boolean flag = true;
     /**
      * 每页最大数量
      */
@@ -115,22 +110,13 @@ public class Application {
             // 被检测到恶意下载 睡眠一天
             while (true){
                 if (ApiService.saveWallpaper(wallpaperId, wallpaperType) == -1L){
-                    final Properties properties = ApiService.getProperties();
-                    if (flag){
-                        ApiService.setCookie(properties.getProperty("Cookie2"));
-                        Console.log("Cookie 切换为配置文件 -> Cookie2");
-                        flag = false;
-                    }else {
-                        Console.log("Cookie 切换为配置文件 -> Cookie");
-                        ApiService.setCookie(properties.getProperty(COOKIE));
-                        Console.log("Detected malicious download, sleep a day");
-                        // 每次下载完毕生成一份备份文件
-                        if (StrategyBackupUtil.generatedBackupFile("/Users/mac/Library/Mobile Documents/com~apple~CloudDocs/ideaProjects/wallpaper/src/main/resources/sql/backup")) {
-                            System.out.println("backup complete...");
-                        }
-                        TimeUnit.DAYS.sleep(1);
-                        flag = true;
+                    Console.log("Download limit for the day");
+                    Console.log("Detected malicious download, sleep a day");
+                    // 每次下载完毕生成一份备份文件
+                    if (StrategyBackupUtil.generatedBackupFile("/Users/mac/Library/Mobile Documents/com~apple~CloudDocs/ideaProjects/wallpaper/src/main/resources/sql/backup")) {
+                        System.out.println("backup complete...");
                     }
+                    TimeUnit.DAYS.sleep(1);
                 }else {
                     break;
                 }
