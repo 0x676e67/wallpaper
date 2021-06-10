@@ -104,7 +104,7 @@ public class Test {
 
 
     @org.junit.Test
-    public void downloadTest() throws IOException, URISyntaxException {
+    public void downloadTest() throws IOException {
 
         final Properties properties = ApiService.getProperties();
         final String apiInfoUrl= (String) properties.get("url.base.info");
@@ -115,7 +115,6 @@ public class Test {
         final String cacheControl = (String) properties.get("header.Cache-Control");
         final String connection = (String) properties.get("header.Connection");
         final String dnt = (String) properties.get("header.DNT");
-        final String wallpaperContentPath = (String) properties.get("wallpaper.file.name");
         final String cookie = ApiService.getCookie();
 
         final HashMap<String, Object> param = new HashMap<>();
