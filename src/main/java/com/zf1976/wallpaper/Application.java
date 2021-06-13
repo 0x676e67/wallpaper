@@ -3,7 +3,7 @@ package com.zf1976.wallpaper;
 import cn.hutool.core.lang.Console;
 import cn.hutool.db.Db;
 import cn.hutool.db.Entity;
-import com.zf1976.wallpaper.api.service.ApiService;
+import com.zf1976.wallpaper.api.service.NetBianApiService;
 import com.zf1976.wallpaper.datasource.StrategyBackupUtil;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
@@ -39,7 +39,7 @@ public class Application {
 
     public static void main(String[] args) {
         try {
-            if (ApiService.STORE) {
+            if (NetBianApiService.STORE) {
                 List<Entity> store = Db.use().findAll("store");
                 for (Entity entity : store) {
                     String dataId = String.valueOf(entity.get("data_id")) ;
@@ -47,7 +47,7 @@ public class Application {
                     downloadWallpaper(dataId, type);
                 }
             } else {
-                final Map<String, String> typeMaps = ApiService.getTypeMaps();
+                final Map<String, String> typeMaps = NetBianApiService.getTypeMaps();
                 // 八种类型壁纸
                 for (String type : typeMaps.keySet()) {
                     // 获取每种壁纸已经下载的壁纸数量
@@ -62,9 +62,9 @@ public class Application {
 
 
     private static void download(String baseUrl,String wallpaperType) throws Exception {
-        final Document baseDocument = ApiService.getConnection()
-                                                .url(baseUrl)
-                                                .get();
+        final Document baseDocument = NetBianApiService.getConnection()
+                                                       .url(baseUrl)
+                                                       .get();
         final String nextPageUrl = baseDocument.getElementsContainingOwnText(NEXT_PAGE)
                                                .attr("abs:href");
         // 无下一页时结束
@@ -77,16 +77,16 @@ public class Application {
         // 每一页
         for (Element element : elements) {
             final String contentUrl = element.attr("abs:href");
-            final Document downloadDocument = ApiService.getConnection()
-                                                        .url(contentUrl)
-                                                        .get();
+            final Document downloadDocument = NetBianApiService.getConnection()
+                                                               .url(contentUrl)
+                                                               .get();
             // 壁纸id
             final String wallpaperId = downloadDocument.getElementsByAttribute(ATTRIBUTE)
                                                        .attr(ATTRIBUTE);
             String wallpaperName = downloadDocument.select("h1")
                                                    .text();
             // 更新存库模式
-            if (ApiService.STORE) {
+            if (NetBianApiService.STORE) {
                 if (Db.use().find(Entity.create("store").set("data_id", wallpaperId)).isEmpty()) {
                     Db.use()
                       .insert(Entity.create("store")
@@ -109,7 +109,7 @@ public class Application {
         ) {
             // 被检测到恶意下载 睡眠一天
             while (true){
-                if (ApiService.saveWallpaper(wallpaperId, wallpaperType) == -1L){
+                if (NetBianApiService.saveWallpaper(wallpaperId, wallpaperType) == -1L){
                     Console.log("Download limit for the day");
                     Console.log("Detected malicious download, sleep a day");
                     // 每次下载完毕生成一份备份文件

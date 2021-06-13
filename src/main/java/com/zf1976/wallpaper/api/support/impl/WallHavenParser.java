@@ -3,7 +3,7 @@ package com.zf1976.wallpaper.api.support.impl;
 
 import com.zf1976.wallpaper.api.support.AbstractParser;
 import com.zf1976.wallpaper.api.build.BaseBuilder;
-import com.zf1976.wallpaper.api.constant.JsoupConstants;
+import com.zf1976.wallpaper.api.constants.JsoupConstants;
 import org.jsoup.Connection;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;

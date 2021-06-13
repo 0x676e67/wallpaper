@@ -1,4 +1,4 @@
-package com.zf1976.wallpaper.api.constant;
+package com.zf1976.wallpaper.api.constants;
 
 /**
  * @author mac

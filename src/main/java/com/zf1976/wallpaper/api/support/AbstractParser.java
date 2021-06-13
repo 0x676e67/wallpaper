@@ -1,6 +1,6 @@
 package com.zf1976.wallpaper.api.support;
 
-import com.zf1976.wallpaper.api.constant.JsoupConstants;
+import com.zf1976.wallpaper.api.constants.JsoupConstants;
 import com.zf1976.wallpaper.api.support.impl.WallHavenParser;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;

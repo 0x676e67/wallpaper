@@ -1,7 +1,5 @@
 package com.zf1976.wallpaper.support;
 
-import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.io.IoUtil;
 
 import java.io.*;
 import java.net.URL;
@@ -226,7 +224,7 @@ public class PrintProgressBar {
                 }
             }
         }
-        System.out.print(stringBuilder.toString());
+        System.out.print(stringBuilder);
         if (autoPrintTime) {
             //完成进度大于等于100则打印总耗时和平均速度
             if (progress >= 100) {
@@ -293,7 +291,7 @@ public class PrintProgressBar {
             }
         }
         //打印
-        System.out.println(stringBuilder.toString());
+        System.out.println(stringBuilder);
     }
     /**
      * 进制转换
@@ -366,7 +364,6 @@ public class PrintProgressBar {
 //                .setAutoPrintTime(false)//取消完成后自动打印总耗时和平均每秒速度
 //                .setPrint100(false)//增加打印次数, 实时监控, 对性能有略微影响(在我的渣渣机子上打印20亿次仅影响10秒)
 //                .setConversion("字节")//自定义单位(此配置需要关闭字节转换才有效果)
-        ;
         OutputStream outputStream = new BufferedOutputStream(new FileOutputStream("/users/mac/desktop/" + fileName));
         byte[] data = new byte [urlConnection.getContentLength()];
         int len =0;

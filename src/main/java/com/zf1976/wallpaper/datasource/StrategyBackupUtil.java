@@ -5,10 +5,13 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 零依赖sql备份恢复工具
@@ -17,12 +20,53 @@ import java.util.stream.Collectors;
  */
 public class StrategyBackupUtil {
 
-    private static final Logger LOGGER = Logger.getLogger(StrategyBackupUtil.class);
+    private static final Logger LOGGER = Logger.getLogger("[StrategyBackupUtil]");
     private static final String INDEX_END = ";";
     private static final String BLANK = "";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final String MYSQL_DUMP = "mysqldump --defaults-extra-file=/etc/my.cnf wallpaper";
     private static final String MYSQL_RECOVER = "mysql --defaults-extra-file=/etc/my.cnf wallpaper < ";
+    private final Pattern pattern = Pattern.compile("(/)([a-zA-Z]*?)(\\?)");
+    private final Pattern patternDefault = Pattern.compile("([/])([a-zA-Z]*)");
+
+    /**
+     * 提取URl数据库名
+     *
+     * @date 2021-05-14 21:03:12
+     * @param dataSource 数据源
+     * @return {@link String}
+     */
+    private String extractDatabase() {
+        try (Connection connection = DbConnectionUtil.createConnection()) {
+            String url = connection.getMetaData().getURL();
+            String database;
+            final Matcher matcher = this.pattern.matcher(url);
+            // 第一次匹配URL
+            while (matcher.find()) {
+                database = matcher.group(2);
+                if (database != null)  {
+                    return database;
+                }
+            }
+            final Matcher matcherDefault = this.patternDefault.matcher(url);
+            byte startIndex = 0;
+            byte endIndex = 3;
+            // 第二次匹配URL
+            while (matcherDefault.find()) {
+                ++startIndex;
+                if (startIndex == endIndex) {
+                    database = matcherDefault.group(2);
+                    if (database != null) {
+                        return database;
+                    }
+                }
+            }
+            throw new RuntimeException("Cannot match data source name");
+        } catch (SQLException | ClassNotFoundException e) {
+            LOGGER.error("Invalid data source", e.getCause());
+            throw new RuntimeException("Invalid datasource", e.getCause());
+        }
+    }
 
     public static boolean generatedBackupFile(String fileDirectory) {
         return generatedBackupFile(Paths.get(fileDirectory).toFile());
@@ -207,7 +251,7 @@ public class StrategyBackupUtil {
                     System.out.println("execute complete...");
                     return false;
                 } else{
-                    System.out.println("no execute sql...");;
+                    System.out.println("no execute sql...");
                     return true;
                 }
             } else {

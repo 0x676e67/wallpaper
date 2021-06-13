@@ -1,7 +1,6 @@
 package com.zf1976.wallpaper.api.service;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.lang.Console;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.db.Db;
 import cn.hutool.db.Entity;
@@ -10,6 +9,7 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONUtil;
 import com.zf1976.wallpaper.enums.TypeEnum;
+import org.apache.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -17,9 +17,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.*;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.Proxy.Type;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.*;
@@ -29,8 +26,10 @@ import java.util.concurrent.TimeUnit;
  * @author mac
  * Create by Ant on 2020/8/15 下午9:37
  */
-public class ApiService {
+@SuppressWarnings("SpellCheckingInspection")
+public class NetBianApiService {
 
+    private static final Logger logger = Logger.getLogger("[NetBianApiService]");
     private static String cookie;
     private static final Set<String> TYPES;
     private static final Map<String, String> TYPE_MAPS;
@@ -47,18 +46,18 @@ public class ApiService {
     public static final String UPGRADE_INSECURE_REQUESTS;
     public static final String HOST;
     public static final Boolean STORE;
+    private final static String HOME_DIR = System.getProperty("user.home");
 
     static {
-        final InputStream is = ApiService.class.getClassLoader().getResourceAsStream("config.properties");
+        final InputStream is = NetBianApiService.class.getClassLoader().getResourceAsStream("config.properties");
         HttpRequest.closeCookie();
 
         final Properties properties = new Properties();
         try {
             properties.load(is);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e.getCause());
         }
-
         String baseUrl = properties.getProperty("url.base");
         cookie = properties.getProperty("Cookie");
         TYPES = new HashSet<>(12);
@@ -75,16 +74,10 @@ public class ApiService {
         UPGRADE_INSECURE_REQUESTS = properties.getProperty("Upgrade-Insecure-Requests");
         HOST = properties.getProperty("header.host");
         CONN = Jsoup.connect(baseUrl);
-        // 不需要代理注释一以下两条
-        /**
-         * Proxy proxy = new Proxy(Type.SOCKS, new InetSocketAddress("127.0.0.1", 1086));
-         *         CONN.proxy(proxy);
-         */
         STORE = Boolean.valueOf(properties.getProperty("store"));
         Document document = null;
         try {
             document = CONN.get();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -102,16 +95,14 @@ public class ApiService {
                 TYPE_MAPS.put(text,url);
             }
         }
-
     }
 
-
     public static long saveWallpaper(String wallpaperId, String wallpaperType) throws IOException {
-        final String downloadUri = getDownloadUri(wallpaperId);
+        final String downloadUri = extractUri(wallpaperId);
         if (downloadUri == null || Objects.equals(downloadUri,"")){
             return -1L;
         }
-        HttpResponse response = null;
+        HttpResponse response;
         response = HttpRequest.get(BASE_URL + downloadUri)
                               .cookie(cookie)
                               .header(Header.ACCEPT, ACCEPT)
@@ -122,19 +113,18 @@ public class ApiService {
                               .header(Header.HOST, HOST)
                               .timeout(2000)
                               .execute(false);
-        final String doestPath = "/Volumes/Disk";
-        final String wallpaperDir = PROPERTIES.getProperty("wallpaper.file.name");
-        final String fileName = getFileName(response);
+        final String wallpaperDir = PROPERTIES.getProperty("wallpaper.dir.name");
+        final String fileName = getFilename(response);
         //文件大小
         int size = response.bodyBytes().length;
-        Console.log("start downloading the wallpaper: {} Size: {}", fileName, getByteConversion(size));
-        File wallpaperFile = FileUtil.file(doestPath, wallpaperDir, wallpaperType, fileName);
+        logger.info("start downloading the wallpaper: {} Size: {}" + fileName + getByteConversion(size));
+        File wallpaperFile = FileUtil.file(HOME_DIR, wallpaperDir, wallpaperType, fileName);
         long startTime;
         if (!wallpaperFile.getParentFile()
                           .exists()) {
             if (!wallpaperFile.getParentFile()
                               .mkdirs()) {
-                System.out.println("create parent file error");
+                logger.error("create parent file error");
             }
         }
         try (InputStream bodyStream = response.bodyStream();
@@ -155,23 +145,23 @@ public class ApiService {
             return -1L;
         }
         try {
-            Console.log("disk: " + wallpaperFile.getAbsolutePath());
+            logger.info("disk: " + wallpaperFile.getAbsolutePath());
             printTime(startTime);
-            Thread.sleep(6000);
+            TimeUnit.SECONDS.sleep(6);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(),e.getCause());
         }
         return 1L;
     }
 
-    private static String getFileName(HttpResponse response) throws UnsupportedEncodingException {
+    private static String getFilename(HttpResponse response) throws UnsupportedEncodingException {
         assert response != null;
         String fileName = response.header(Header.CONTENT_DISPOSITION);
         fileName = ReUtil.get("filename=\"(.*?)\"", fileName, 1);
         return new String(fileName.getBytes(StandardCharsets.ISO_8859_1), "GB2312");
     }
 
-    private static String getDownloadUri(String wallpaperId) {
+    private static String extractUri(String wallpaperId) {
         final HashMap<String, Object> form = new HashMap<>(2);
         form.put("t", Math.random());
         form.put("id", wallpaperId);
@@ -185,9 +175,9 @@ public class ApiService {
                                   .execute(false);
             final String body = response.body();
             uri = (String) JSONUtil.parse(body).getByPath("pic");
-            Console.log("download link:{}",BASE_URL + uri);
+            logger.info("download link:" + BASE_URL + uri);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(),e.getCause());
         }
         return uri;
     }
@@ -217,15 +207,12 @@ public class ApiService {
                 timeConversion = "秒";
             }
         }
-        StringBuilder stringBuilder = new StringBuilder();
         //打印时间
-        {
-            stringBuilder.append("the download is complete, the total time-consuming: ");
-            //总毫秒 转换成秒在 除 转换倍率 ---> 保留两位小数点
-            stringBuilder.append(String.format("%.2f", (time + 0.0) / conversion / 1000));
-            stringBuilder.append(timeConversion);
-        }
-        System.out.println(stringBuilder.toString());
+        String stringBuilder = "the download is complete, the total time-consuming: " +
+                //总毫秒 转换成秒在 除 转换倍率 ---> 保留两位小数点
+                String.format("%.2f", (time + 0.0) / conversion / 1000) +
+                timeConversion;
+        logger.info(stringBuilder);
     }
 
     private static StringBuilder getByteConversion(double num) {
@@ -244,7 +231,7 @@ public class ApiService {
     }
 
     public static void setCookie(String cookie) {
-        ApiService.cookie = cookie;
+        NetBianApiService.cookie = cookie;
     }
 
     public static Properties getProperties(){
