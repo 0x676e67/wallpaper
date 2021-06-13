@@ -24,23 +24,25 @@ public class StrategyBackupUtil {
     private static final String INDEX_END = ";";
     private static final String BLANK = "";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private static final String MYSQL_DUMP = "mysqldump --defaults-extra-file=/etc/my.cnf wallpaper";
-    private static final String MYSQL_RECOVER = "mysql --defaults-extra-file=/etc/my.cnf wallpaper < ";
-    private final Pattern pattern = Pattern.compile("(/)([a-zA-Z]*?)(\\?)");
-    private final Pattern patternDefault = Pattern.compile("([/])([a-zA-Z]*)");
+    private static final String MYSQL_DUMP ;
+    private static final String MYSQL_RECOVER ;
+    private static final Pattern PATTERN = Pattern.compile("(/)([a-zA-Z]*?)(\\?)");
+    private static final Pattern PATTERN_DEFAULT = Pattern.compile("([/])([a-zA-Z]*)");
 
+    static {
+        MYSQL_DUMP = "mysqldump --defaults-extra-file=/etc/my.cnf " + extractDatabase();
+        MYSQL_RECOVER = "mysql --defaults-extra-file=/etc/my.cnf " + extractDatabase() + " < ";
+    }
     /**
      * 提取URl数据库名
      *
-     * @date 2021-05-14 21:03:12
-     * @param dataSource 数据源
      * @return {@link String}
      */
-    private String extractDatabase() {
+    private static String extractDatabase() {
         try (Connection connection = DbConnectionUtil.createConnection()) {
             String url = connection.getMetaData().getURL();
             String database;
-            final Matcher matcher = this.pattern.matcher(url);
+            final Matcher matcher = PATTERN.matcher(url);
             // 第一次匹配URL
             while (matcher.find()) {
                 database = matcher.group(2);
@@ -48,7 +50,7 @@ public class StrategyBackupUtil {
                     return database;
                 }
             }
-            final Matcher matcherDefault = this.patternDefault.matcher(url);
+            final Matcher matcherDefault = PATTERN_DEFAULT.matcher(url);
             byte startIndex = 0;
             byte endIndex = 3;
             // 第二次匹配URL
