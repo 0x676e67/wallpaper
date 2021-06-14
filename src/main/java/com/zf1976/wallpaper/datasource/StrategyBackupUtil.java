@@ -9,12 +9,15 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 零依赖sql备份恢复工具
+ * 零依赖sql策略备份恢复工具
  * @author ant
  * Create by Ant on 2021/3/16 8:58 AM
  */
@@ -28,11 +31,14 @@ public class StrategyBackupUtil {
     private static final String MYSQL_RECOVER ;
     private static final Pattern PATTERN = Pattern.compile("(/)([a-zA-Z]*?)(\\?)");
     private static final Pattern PATTERN_DEFAULT = Pattern.compile("([/])([a-zA-Z]*)");
+    private static final String DATABASE;
 
     static {
-        MYSQL_DUMP = "mysqldump --defaults-extra-file=/etc/my.cnf " + extractDatabase();
-        MYSQL_RECOVER = "mysql --defaults-extra-file=/etc/my.cnf " + extractDatabase() + " < ";
+        DATABASE = extractDatabase();
+        MYSQL_DUMP = "mysqldump --defaults-extra-file=/etc/my.cnf " + DATABASE;
+        MYSQL_RECOVER = "mysql --defaults-extra-file=/etc/my.cnf " + DATABASE + " < ";
     }
+
     /**
      * 提取URl数据库名
      *
@@ -98,7 +104,7 @@ public class StrategyBackupUtil {
             try {
                 Process p = Runtime.getRuntime().exec(new String[]{"bash", "-c", MYSQL_RECOVER + absolutePath});
                 if(p.waitFor() == 0){
-                    LOGGER.info("数据库恢复成功，数据来源 < " + absolutePath);
+                    LOGGER.info("The database is restored successfully, the data source < " + absolutePath);
                     return true;
                 }
             } catch (IOException | InterruptedException e) {
@@ -119,20 +125,20 @@ public class StrategyBackupUtil {
                 // 生成策略备份文件
                 File backupFile = generationStrategyFile(fileDirectory);
                 if (!backupFile.exists() || backupFile.isDirectory()) {
-                    LOGGER.warn("备份文件路径无效：" + fileDirectory.getAbsolutePath());
+                    LOGGER.warn("Invalid backup file path：" + fileDirectory.getAbsolutePath());
                     return false;
                 }
                 // 执行备份文件命令
                 if (executeBackupCmd(backupFile)) {
-                    LOGGER.info("备份数据库成功");
+                    LOGGER.info("Successfully backed up the database" + DATABASE);
                 }
                 return true;
             } catch (IOException | InterruptedException exception) {
-                LOGGER.error("备份数据库失败 : {}" + exception.getMessage());
+                LOGGER.error("Failed to backup database : " + exception.getMessage());
                 return false;
             }
         } else {
-            LOGGER.warn("目录：" + fileDirectory + " 不存在");
+            LOGGER.warn("Directory：" + fileDirectory + " does not exist");
         }
         return false;
     }
@@ -146,7 +152,7 @@ public class StrategyBackupUtil {
         Process exec = Runtime.getRuntime().exec(MYSQL_DUMP);
         final BufferedInputStream bufferedInputStream = new BufferedInputStream(exec.getInputStream());
         if (writeBackupFile(bufferedInputStream, backupFile)) {
-            LOGGER.warn("写出备份文件失败");
+            LOGGER.error("Failed to write backup file");
             return false;
         }
         return exec.waitFor() == 0;
@@ -162,7 +168,7 @@ public class StrategyBackupUtil {
      */
     private static boolean writeBackupFile(BufferedInputStream bufferedReader, File backupFile)  {
         if (bufferedReader == null) {
-            LOGGER.warn("备份文件命令无效：" + MYSQL_DUMP);
+            LOGGER.warn("Invalid backup file command：" + MYSQL_DUMP);
             return true;
         }
         try (bufferedReader; BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(backupFile))) {
@@ -204,10 +210,10 @@ public class StrategyBackupUtil {
     private static File generationStrategyFile(File directory) throws IOException {
         File file = Paths.get(directory.getAbsolutePath(), DATE_FORMAT.format(new Date()) + ".sql").toFile();
         if (file.isFile()) {
-            throw new UnsupportedOperationException("file path is not supported");
+            throw new UnsupportedOperationException("File path is not supported");
         }
         if (!file.createNewFile()) {
-            throw new RuntimeException("failed to create file");
+            throw new RuntimeException("Failed to create file");
         }
         return file;
     }
@@ -250,14 +256,14 @@ public class StrategyBackupUtil {
             if (sqlStr.size() > 0) {
                 int num = batchDate(sqlStr);
                 if (num > 0) {
-                    System.out.println("execute complete...");
+                    System.out.println("Execute complete...");
                     return false;
                 } else{
-                    System.out.println("no execute sql...");
+                    System.out.println("No execute sql...");
                     return true;
                 }
             } else {
-                System.out.println("no execute sql...");
+                System.out.println("No execute sql...");
             }
         } catch (Exception e) {
             e.printStackTrace();
