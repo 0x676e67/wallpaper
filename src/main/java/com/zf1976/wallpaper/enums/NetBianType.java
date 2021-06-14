@@ -4,7 +4,7 @@ package com.zf1976.wallpaper.enums;
  * @author ant
  * Create by Ant on 2020/8/15 下午7:48
  */
-public enum TypeEnum {
+public enum NetBianType {
 
     //风景 scenery
 //    SCENERY(1,"4K风景"),
@@ -46,7 +46,7 @@ public enum TypeEnum {
 
     public final String description;
 
-    TypeEnum(int index, String description) {
+    NetBianType(int index, String description) {
         this.index = index;
         this.description = description;
     }

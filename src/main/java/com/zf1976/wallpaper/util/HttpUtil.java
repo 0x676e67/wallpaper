@@ -1,10 +1,5 @@
 package com.zf1976.wallpaper.util;
 
-import cn.hutool.core.lang.PatternPool;
-import cn.hutool.core.util.CharsetUtil;
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.util.URLUtil;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,16 +9,8 @@ import java.util.regex.Pattern;
  **/
 public class HttpUtil {
 
+    private static final Pattern FILENAME_PATTERN = Pattern.compile("filename=\"(.*?)\"");
 
-    public static String getFileNameFromPath(String path) {
-        // 从路径中获取文件名
-        String fileName = StringUtil.subSuf(path, path.lastIndexOf('/') + 1);
-        if (StrUtil.isBlank(fileName)) {
-            // 编码后的路径做为文件名
-            fileName = URLUtil.encodeQuery(path, CharsetUtil.CHARSET_UTF_8);
-        }
-        return fileName;
-    }
 
     /**
      * 从Content-Disposition头中获取文件名
@@ -32,11 +19,8 @@ public class HttpUtil {
      */
     public static String getFileNameFromDisposition(String header) {
         String fileName = null;
-        if (StrUtil.isNotBlank(header)) {
+        if (!StringUtil.isEmpty(header)) {
             fileName = pattern("filename=\"(.*?)\"", header, 1);
-            if (StrUtil.isBlank(fileName)) {
-                fileName = StrUtil.subAfter(header, "filename=", true);
-            }
         }
         return fileName;
     }
@@ -54,7 +38,7 @@ public class HttpUtil {
         if (null == content || null == regex) {
             return null;
         }
-        final Pattern pattern = PatternPool.get(regex, Pattern.DOTALL);
+        final Pattern pattern = Pattern.compile(regex);
         return pattern(pattern, content, groupIndex);
     }
 

@@ -7,7 +7,7 @@ import lombok.Data;
  * Create by Ant on 2020/8/19 下午6:17
  */
 @Data
-public class IndexEntity {
+public class NetBianEntity {
 
     private Integer id;
 
