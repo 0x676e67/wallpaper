@@ -5,7 +5,8 @@
     "downloadUrl" : "https://pic.netbian.com/downpic.php?id={}&classid={}",
     "wallpaperDirName": "netbian",
     "cookie": "demo cookie",
-    "record": true
+    "record": true,
+    "store": false
   },
   "wallhaven" : "https://www.baidu.com"
 }

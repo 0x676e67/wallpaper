@@ -149,7 +149,7 @@ package com.zf1976.wallpaper.api.service;
 //                                  .execute(false);
 //            final String body = response.body();
 //            uri = (String) JSONUtil.parse(body).getByPath("pic");
-//            logger.info("download link:" + BASE_URL + uri);
+//            logger.info("beginExecutor link:" + BASE_URL + uri);
 //        } catch (Exception e) {
 //            logger.error(e.getMessage(),e.getCause());
 //        }
@@ -182,7 +182,7 @@ package com.zf1976.wallpaper.api.service;
 //            }
 //        }
 //        //打印时间
-//        String stringBuilder = "the download is complete, the total time-consuming: " +
+//        String stringBuilder = "the beginExecutor is complete, the total time-consuming: " +
 //                //总毫秒 转换成秒在 除 转换倍率 ---> 保留两位小数点
 //                String.format("%.2f", (time + 0.0) / conversion / 1000) +
 //                timeConversion;

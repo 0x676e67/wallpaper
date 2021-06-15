@@ -28,7 +28,7 @@
 //    /**
 //     * 属性key
 //     */
-//    public final static String ATTRIBUTE = "data-id";
+//    public final static String DATA_ID = "data-id";
 //    /**
 //     * cookie
 //     */
@@ -48,7 +48,7 @@
 //                // 八种类型壁纸
 //                for (String type : typeMaps.keySet()) {
 //                    // 获取每种壁纸已经下载的壁纸数量
-//                    download(typeMaps.get(type), type);
+//                    beginExecutor(typeMaps.get(type), type);
 //                }
 //            }
 //        } catch (Exception e) {
@@ -57,7 +57,7 @@
 //    }
 //
 //
-//    private static void download(String baseUrl,String wallpaperType) throws Exception {
+//    private static void beginExecutor(String baseUrl,String wallpaperType) throws Exception {
 //        final Document baseDocument = NetBianApiService.getConnection()
 //                                                       .url(baseUrl)
 //                                                       .get();
@@ -76,8 +76,8 @@
 //                                                               .url(contentUrl)
 //                                                               .get();
 //            // 壁纸id
-//            final String wallpaperId = downloadDocument.getElementsByAttribute(ATTRIBUTE)
-//                                                       .attr(ATTRIBUTE);
+//            final String wallpaperId = downloadDocument.getElementsByAttribute(DATA_ID)
+//                                                       .attr(DATA_ID);
 //            String wallpaperName = downloadDocument.select("h1")
 //                                                   .text();
 //            // 更新存库模式
@@ -93,7 +93,7 @@
 //                downloadWallpaper(wallpaperId, wallpaperType);
 //            }
 //        }
-//        download(nextPageUrl, wallpaperType);
+//        beginExecutor(nextPageUrl, wallpaperType);
 //    }
 //
 //    private static void downloadWallpaper(String wallpaperId, String wallpaperType) throws IOException, SQLException, InterruptedException {

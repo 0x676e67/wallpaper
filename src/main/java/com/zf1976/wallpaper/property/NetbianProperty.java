@@ -19,14 +19,17 @@ public class NetbianProperty {
      */
     private String downloadUrl;
     /**
-     * download directory filename
+     * beginExecutor directory filename
      */
     private String wallpaperDirName;
     /**
      * cookie
      */
     private String cookie;
-
+    /**
+     * store
+     */
+    private Boolean store;
     /**
      * 记录
      */
@@ -34,6 +37,15 @@ public class NetbianProperty {
 
     public String getUrl() {
         return url;
+    }
+
+    public Boolean getStore() {
+        return store;
+    }
+
+    public NetbianProperty setStore(Boolean store) {
+        this.store = store;
+        return this;
     }
 
     public NetbianProperty setUrl(String url) {
@@ -94,6 +106,7 @@ public class NetbianProperty {
                 ", downloadUrl='" + downloadUrl + '\'' +
                 ", wallpaperDirName='" + wallpaperDirName + '\'' +
                 ", cookie='" + cookie + '\'' +
+                ", store=" + store +
                 ", record=" + record +
                 '}';
     }
