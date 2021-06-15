@@ -13,4 +13,6 @@ public interface NetbianConstants {
     String DATA_ID = "data-id";
 
     String ATTR_H1 = "h1";
+
+    String PIC = "pic";
 }

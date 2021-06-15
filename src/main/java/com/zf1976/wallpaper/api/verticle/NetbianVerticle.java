@@ -2,10 +2,11 @@ package com.zf1976.wallpaper.api.verticle;
 
 import com.zf1976.wallpaper.api.constants.JsoupConstants;
 import com.zf1976.wallpaper.api.constants.NetbianConstants;
-import com.zf1976.wallpaper.entity.NetbianEntity;
 import com.zf1976.wallpaper.enums.NetBianType;
 import com.zf1976.wallpaper.property.NetbianProperty;
+import com.zf1976.wallpaper.util.HttpUtil;
 import io.vertx.core.*;
+import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
@@ -14,11 +15,18 @@ import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author mac
@@ -31,20 +39,20 @@ public class NetbianVerticle extends AbstractVerticle {
     private final Set<String> wallpaperType = new HashSet<>();
     private final Map<String, String> wallpaperTypeMap = new HashMap<>();
     private NetbianProperty property;
+    protected HttpClient httpClient = HttpClient.newHttpClient();
+    protected final String USER_HOME = System.getProperty("user.home");
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
+        NetbianVerticle that = this;
         this.initConfig()
-            .onSuccess(property -> {
-                if (property != null) {
-                    this.property = property;
-                    this.begin()
-                        .onSuccess(event -> {
-                            startPromise.complete();
-                        }).onFailure(startPromise::fail);
-                } else {
-                    startPromise.fail("Failed to extract configuration");
-                }
+            .compose(property -> {
+                // always not null
+                that.property = property;
+                return this.begin();
+            })
+            .onComplete(event -> {
+                startPromise.complete();
             })
             .onFailure(err -> {
                 log.error(err.getMessage(), err.getCause());
@@ -60,14 +68,7 @@ public class NetbianVerticle extends AbstractVerticle {
             return Future.failedFuture(e);
         }
     }
-    private Future<NetbianProperty> demo() {
-        var netbian = this.config()
-                          .getJsonObject("netbian");
-        var promise = Promise.<NetbianProperty>promise();
-        var netbianProperty = netbian.mapTo(NetbianProperty.class);
-        promise.complete(netbianProperty);
-        return promise.future();
-    }
+
 
     private void initWallpaperType(String mainUrl) {
         Connection connect = Jsoup.connect(mainUrl);
@@ -99,9 +100,7 @@ public class NetbianVerticle extends AbstractVerticle {
 
     protected Future<Void> begin() {
         this.initWallpaperType(this.property.getUrl());
-        if (this.property.getStore()) {
-
-        } else {
+        if (!this.property.getStore()) {
             for (Map.Entry<String, String> entry : this.wallpaperTypeMap.entrySet()) {
                 try {
                     this.beginExecutor(entry.getKey(), entry.getValue());
@@ -119,9 +118,9 @@ public class NetbianVerticle extends AbstractVerticle {
         var pageElement = pageDocument.select(NetbianConstants.HREF_IMAGE);
         for (Element element : pageElement) {
             var wallpaperPageUrl = element.attr(JsoupConstants.ABS_HREF);
-            var wallpaperDocument = Jsoup.connect(wallpaperPageUrl).get();
-            final String wallpaperId = wallpaperDocument.getElementsByAttribute(NetbianConstants.DATA_ID)
-                                                       .attr(NetbianConstants.DATA_ID);
+            final String wallpaperId = Jsoup.connect(wallpaperPageUrl)
+                                            .get().getElementsByAttribute(NetbianConstants.DATA_ID)
+                                            .attr(NetbianConstants.DATA_ID);
             this.beginDownload(wallpaperId, type);
         }
 
@@ -133,12 +132,71 @@ public class NetbianVerticle extends AbstractVerticle {
     }
 
     protected void beginDownload(String wallpaperId, String type) {
-        System.out.println(wallpaperId);
+        String downloadUri = this.extractDownloadUri(wallpaperId);
+        if (StringUtil.isBlank(downloadUri)) {
+            return;
+        }
+        String url = this.property.getUrl() + downloadUri;
+        log.info("Download link：" + url);
+        HttpRequest request = HttpRequest.newBuilder()
+                                         .GET()
+                                         .uri(URI.create(url))
+                                         .headers("cookie", this.property.getCookie())
+                                         .build();
+        try {
+            HttpResponse<InputStream> httpResponse = this.httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+            var header = httpResponse.headers()
+                                     .firstValue("Content-Disposition")
+                                     .orElse(UUID.randomUUID().toString());
+            String fileNameFromDisposition = HttpUtil.getFileNameFromDisposition(header);
+            if (fileNameFromDisposition != null) {
+                try {
+                    fileNameFromDisposition = new String(fileNameFromDisposition.getBytes(StandardCharsets.ISO_8859_1), "GB2312");
+                    var path = this.getWallpaperFile(type, fileNameFromDisposition);
+                    try(var inputStream = httpResponse.body();
+                        final var bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(path.toFile()))
+                    ) {
+                        byte[] data = new byte[4 * 1024];
+                        int len;
+                        while ((len = inputStream.read(data)) != -1) {
+                            bufferedOutputStream.write(data, 0, len);
+                        }
+                    }
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException("download failed");
+        }
+
+    }
+
+    private Path getWallpaperFile(String type, String filename) {
+        return Paths.get(this.USER_HOME, this.property.getWallpaperDirName(), type, filename);
     }
 
 
-    protected String extractDocumentType(String wallpaperId){
+    protected String extractDownloadUri(String wallpaperId){
+        String url = this.property.getInfoUrl() + "?t=" + Math.random() + "&id=" + wallpaperId;
+        HttpRequest request = HttpRequest.newBuilder()
+                                        .GET()
+                                        .uri(URI.create(url))
+                                        .headers("cookie", this.property.getCookie())
+                                        .build();
+        try {
+            String body = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+                                         .body();
+            return new JsonObject(body).getString(NetbianConstants.PIC);
+        } catch (IOException | InterruptedException e) {
+            return null;
+        }
+    }
 
-        return null;
+    @Override
+    public void stop() throws Exception {
+        this.wallpaperType.clear();
+        this.wallpaperTypeMap.clear();
     }
 }

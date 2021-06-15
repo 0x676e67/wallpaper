@@ -8,6 +8,8 @@ import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
 import org.apache.log4j.Logger;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author mac
  * @date 2021/6/14
@@ -26,7 +28,7 @@ public class WallpaperApplication {
                 );
         final ConfigRetrieverOptions configRetrieverOptions = new ConfigRetrieverOptions()
                 .addStore(configStoreOptions);
-        final Vertx vertx = Vertx.vertx();
+        final Vertx vertx = Vertx.vertx(new VertxOptions().setBlockedThreadCheckIntervalUnit(TimeUnit.DAYS));
         ConfigRetriever configRetriever = ConfigRetriever.create(vertx, configRetrieverOptions);
         configRetriever.listen(event -> {
             // 更新配置，总线通知
