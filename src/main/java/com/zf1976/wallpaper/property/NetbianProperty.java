@@ -27,6 +27,11 @@ public class NetbianProperty {
      */
     private String cookie;
 
+    /**
+     * 记录
+     */
+    private Boolean record;
+
     public String getUrl() {
         return url;
     }
@@ -72,6 +77,15 @@ public class NetbianProperty {
         return this;
     }
 
+    public Boolean getRecord() {
+        return record;
+    }
+
+    public NetbianProperty setRecord(Boolean record) {
+        this.record = record;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "NetbianProperty{" +
@@ -80,6 +94,7 @@ public class NetbianProperty {
                 ", downloadUrl='" + downloadUrl + '\'' +
                 ", wallpaperDirName='" + wallpaperDirName + '\'' +
                 ", cookie='" + cookie + '\'' +
+                ", record=" + record +
                 '}';
     }
 }
