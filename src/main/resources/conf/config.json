@@ -4,7 +4,8 @@
     "infoUrl" : "https://pic.netbian.com/e/extend/downpic.php",
     "downloadUrl" : "https://pic.netbian.com/downpic.php?id={}&classid={}",
     "wallpaperDirName": "netbian",
-    "cookie": "demo cookie"
+    "cookie": "demo cookie",
+    "record": true
   },
   "wallhaven" : "https://www.baidu.com"
 }

@@ -6,14 +6,25 @@ package com.zf1976.wallpaper.property;
  */
 public class NetbianProperty {
 
+    /**
+     * URL
+     */
     private String url;
-
+    /**
+     * info URL
+     */
     private String infoUrl;
-
+    /**
+     * downloadUrl
+     */
     private String downloadUrl;
-
+    /**
+     * download directory filename
+     */
     private String wallpaperDirName;
-
+    /**
+     * cookie
+     */
     private String cookie;
 
     public String getUrl() {
