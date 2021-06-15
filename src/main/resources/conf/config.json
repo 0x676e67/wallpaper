@@ -1,0 +1,10 @@
+{
+  "netbian" : {
+    "url" : "https://pic.netbian.com",
+    "infoUrl" : "https://pic.netbian.com/e/extend/downpic.php",
+    "downloadUrl" : "https://pic.netbian.com/downpic.php?id={}&classid={}",
+    "wallpaperDirName": "netbian",
+    "cookie": "demo cookie"
+  },
+  "wallhaven" : "https://www.baidu.com"
+}

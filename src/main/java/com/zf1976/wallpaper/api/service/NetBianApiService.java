@@ -1,5 +1,6 @@
-//package com.zf1976.wallpaper.api.service;
-//
+package com.zf1976.wallpaper.api.service;
+
+//import com.zf1976.wallpaper.api.constants.JsoupConstants;
 //import com.zf1976.wallpaper.enums.NetBianType;
 //import org.apache.log4j.Logger;
 //import org.jsoup.Connection;
@@ -28,14 +29,6 @@
 //    public static final Properties PROPERTIES;
 //    public static final String BASE_URL;
 //    public static final String BASE_INFO_URL;
-//    public static final String ACCEPT;
-//    public static final String ACCEPT_ENCODING;
-//    public static final String ACCEPT_LANGUAGE;
-//    public static final String CACHE_CONTROL;
-//    public static final String CONNECTION;
-//    public static final String DNT;
-//    public static final String UPGRADE_INSECURE_REQUESTS;
-//    public static final String HOST;
 //    public static final Boolean STORE;
 //    private final static String HOME_DIR = System.getProperty("user.home");
 //
@@ -54,14 +47,6 @@
 //        PROPERTIES = properties;
 //        BASE_URL = baseUrl;
 //        BASE_INFO_URL = properties.getProperty("url.base.info");
-//        ACCEPT = properties.getProperty("header.Accept");
-//        ACCEPT_ENCODING = properties.getProperty("header.Accept-Encoding");
-//        ACCEPT_LANGUAGE = properties.getProperty("header.Accept-Language");
-//        CACHE_CONTROL = properties.getProperty("header.Cache-Control");
-//        CONNECTION = properties.getProperty("header.Connection");
-//        DNT = properties.getProperty("header.DNT");
-//        UPGRADE_INSECURE_REQUESTS = properties.getProperty("Upgrade-Insecure-Requests");
-//        HOST = properties.getProperty("header.host");
 //        CONN = Jsoup.connect(baseUrl);
 //        STORE = Boolean.valueOf(properties.getProperty("store"));
 //        Document document = null;
@@ -78,10 +63,10 @@
 //        }
 //        // 壁纸分类页面
 //        for (Element link : links) {
-//            final String url = link.attr("abs:href");
+//            final String url = link.attr(JsoupConstants.ABS_HREF);
 //            final String text = trim(link.text());
 //            if (TYPES.contains(text)){
-//                TYPE_MAPS.put(text,url);
+//                TYPE_MAPS.put(text, url);
 //            }
 //        }
 //    }
