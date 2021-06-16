@@ -14,21 +14,34 @@ repositories {
     }
 }
 
+ext{
+    jacksonVersion = "2.10.3"
+}
 dependencies {
     implementation 'org.jsoup:jsoup:1.13.1'
     implementation 'junit:junit:4.13'
     compile 'io.vertx:vertx-core:4.1.0'
     compile 'io.vertx:vertx-config:4.1.0'
     compile 'io.vertx:vertx-mysql-client:4.1.0'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.3'
+    compile "io.vertx:vertx-sql-client-templates:4.1.0"
+    compile 'io.vertx:vertx-codegen:4.1.0'
+    annotationProcessor "io.vertx:vertx-codegen:4.1.0:processor"
+    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
     compile 'mysql:mysql-connector-java:8.0.21'
     compile 'log4j:log4j:1.2.17'
 }
 
-group = 'org.example'
+group = 'org.zf1976'
 version = '1.0-SNAPSHOT'
 description = 'wallpaper'
 java.sourceCompatibility = JavaVersion.VERSION_11
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
 
 publishing {
     publications {

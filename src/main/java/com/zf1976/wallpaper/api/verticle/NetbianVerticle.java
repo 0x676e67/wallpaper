@@ -6,7 +6,6 @@ import com.zf1976.wallpaper.enums.NetBianType;
 import com.zf1976.wallpaper.property.NetbianProperty;
 import com.zf1976.wallpaper.util.HttpUtil;
 import io.vertx.core.*;
-import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
@@ -21,12 +20,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author mac
