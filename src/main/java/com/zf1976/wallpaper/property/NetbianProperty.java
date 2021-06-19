@@ -35,6 +35,28 @@ public class NetbianProperty {
      */
     private Boolean record;
 
+    private String selectDataIdSql;
+
+    private String insertNetbianSql;
+
+    public String getInsertNetbianSql() {
+        return insertNetbianSql;
+    }
+
+    public NetbianProperty setInsertNetbianSql(String insertNetbianSql) {
+        this.insertNetbianSql = insertNetbianSql;
+        return this;
+    }
+
+    public String getSelectDataIdSql() {
+        return selectDataIdSql;
+    }
+
+    public NetbianProperty setSelectDataIdSql(String selectDataIdSql) {
+        this.selectDataIdSql = selectDataIdSql;
+        return this;
+    }
+
     public String getUrl() {
         return url;
     }
@@ -108,6 +130,8 @@ public class NetbianProperty {
                 ", cookie='" + cookie + '\'' +
                 ", store=" + store +
                 ", record=" + record +
+                ", selectDataIdSql='" + selectDataIdSql + '\'' +
+                ", insertNetbianSql='" + insertNetbianSql + '\'' +
                 '}';
     }
 }

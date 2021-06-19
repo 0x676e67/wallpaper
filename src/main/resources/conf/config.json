@@ -4,9 +4,11 @@
     "infoUrl" : "https://pic.netbian.com/e/extend/downpic.php",
     "downloadUrl" : "https://pic.netbian.com/downpic.php?id={}&classid={}",
     "wallpaperDirName": "netbian",
-    "cookie": "__yjs_duid=1_aa883502a299a54c852f841823ba71871623639401402; Hm_lvt_14b14198b6e26157b7eba06b390ab763=1623639402; Hm_lvt_526caf4e20c21f06a4e9209712d6a20e=1623597552,1623598714,1623640710,1623770937; PHPSESSID=ar88dcdjp9n7gi4sjfjclnndk5; zkhanmlusername=qq_%B8%D2%B8%D2176; zkhanmluserid=2344838; zkhanmlgroupid=3; zkhanmlrnd=nzbhIZDIkNQgZIl6ayhU; zkhanmlauth=4051ba5de938e2aff3d885437c92074e; Hm_lpvt_526caf4e20c21f06a4e9209712d6a20e=1623770952",
+    "cookie" : "Hm_lvt_14b14198b6e26157b7eba06b390ab763=1615565427,1615900982; __yjs_duid=1_1e1a6ba08d6492eb509e81ce504b71241623755683215; zkhanecookieclassrecord=%2C66%2C; Hm_lvt_526caf4e20c21f06a4e9209712d6a20e=1623755686,1624094497; PHPSESSID=ce20rsgcsi0cv5tgq6vjv1f1k7; zkhanmlusername=qq_%B8%D2%B8%D2176; zkhanmluserid=2344838; zkhanmlgroupid=3; zkhanmlrnd=bgTllgSclx1CSCWtz4i6; zkhanmlauth=07eba5f28b64ba67d9ecd6e25a3ab051; Hm_lpvt_526caf4e20c21f06a4e9209712d6a20e=1624094512",
     "record": true,
-    "store": false
+    "store": false,
+    "selectDataIdSql" : "SELECT data_id as dataId,name,type,id from index_entity WHERE data_id = ?",
+    "insertNetbianSql" : "INSERT INTO `index_entity`(data_id, name, type) VALUES (?, ?, ?)"
   },
   "wallhaven" : "https://www.baidu.com"
 }

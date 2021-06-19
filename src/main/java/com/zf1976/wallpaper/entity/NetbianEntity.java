@@ -1,20 +1,13 @@
 package com.zf1976.wallpaper.entity;
 
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.codegen.format.LowerCamelCase;
-import io.vertx.codegen.format.QualifiedCase;
-import io.vertx.codegen.format.SnakeCase;
-import io.vertx.sqlclient.templates.annotations.Column;
-import io.vertx.sqlclient.templates.annotations.ParametersMapped;
-import io.vertx.sqlclient.templates.annotations.RowMapped;
+
 
 /**
  * @author mac
  * Create by Ant on 2020/8/19 下午6:17
  */
 @DataObject
-@RowMapped
-@ParametersMapped
 public class NetbianEntity {
 
     private Integer id;

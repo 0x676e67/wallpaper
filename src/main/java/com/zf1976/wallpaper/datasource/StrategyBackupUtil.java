@@ -45,7 +45,7 @@ public class StrategyBackupUtil {
      * @return {@link String}
      */
     private static String extractDatabase() {
-        try (Connection connection = DbConnectionUtil.createConnection()) {
+        try (Connection connection = DbStoreUtil.createConnection()) {
             String url = connection.getMetaData().getURL();
             String database;
             final Matcher matcher = PATTERN.matcher(url);
@@ -189,7 +189,7 @@ public class StrategyBackupUtil {
      * @return int 影响的函数
      */
     private static int batchDate(List<String> sql) {
-        try (Statement st = DbConnectionUtil.createConnection().createStatement()){
+        try (Statement st = DbStoreUtil.createConnection().createStatement()){
             for (String subSql : sql) {
                 st.addBatch(subSql);
             }

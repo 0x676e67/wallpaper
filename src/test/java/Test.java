@@ -1,16 +1,15 @@
-import io.vertx.core.Future;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.http.HttpConnection;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.net.NetSocket;
+import com.zf1976.wallpaper.datasource.DbStoreUtil;
+import com.zf1976.wallpaper.entity.NetbianEntity;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.SQLException;
 
 /**
  * @author ant
@@ -30,5 +29,27 @@ public class Test {
         String body = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
                                 .body();
         System.out.println(body);
+    }
+
+    @org.junit.Test
+    public void sqlTest() {
+
+        final var b = DbStoreUtil.checkNetbianWallpaperId("SELECT data_id as dataId,name,type,id from index_entity where data_id = ?","17068");
+        final var netbianEntity = new NetbianEntity();
+        final var entity = netbianEntity.setDataId("2")
+                                                .setName("2")
+                                                .setType("2");
+        final var insertNetbianEntity = DbStoreUtil.insertNetbianEntity("INSERT INTO `index_entity`(data_id, name, type) VALUES (?, ?, ?)", entity);
+        System.out.println(insertNetbianEntity);
+        System.out.println(b);
+    }
+
+    @org.junit.Test
+    public void fileTest() {
+        try {
+            Files.createDirectories(Paths.get("/Users/ant","netbian","4k"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

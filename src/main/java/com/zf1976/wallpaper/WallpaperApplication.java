@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class WallpaperApplication {
 
-    private static final Logger log = Logger.getLogger("[WallpaperVerticle]");
+    private static final Logger log = Logger.getLogger("[WallpaperApplication]");
 
     public static void main(String[] args) {
         final ConfigStoreOptions configStoreOptions = new ConfigStoreOptions()

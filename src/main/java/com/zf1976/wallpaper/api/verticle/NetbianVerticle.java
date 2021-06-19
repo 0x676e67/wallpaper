@@ -2,6 +2,8 @@ package com.zf1976.wallpaper.api.verticle;
 
 import com.zf1976.wallpaper.api.constants.JsoupConstants;
 import com.zf1976.wallpaper.api.constants.NetbianConstants;
+import com.zf1976.wallpaper.datasource.DbStoreUtil;
+import com.zf1976.wallpaper.entity.NetbianEntity;
 import com.zf1976.wallpaper.enums.NetBianType;
 import com.zf1976.wallpaper.property.NetbianProperty;
 import com.zf1976.wallpaper.util.HttpUtil;
@@ -20,6 +22,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -41,22 +44,19 @@ public class NetbianVerticle extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         NetbianVerticle that = this;
-        this.initConfig()
+        this.init()
             .compose(property -> {
                 // always not null
                 that.property = property;
                 return this.begin();
             })
-            .onComplete(event -> {
+            .onSuccess(event -> {
                 startPromise.complete();
             })
-            .onFailure(err -> {
-                log.error(err.getMessage(), err.getCause());
-                startPromise.fail(err);
-            });
+            .onFailure(startPromise::fail);
     }
 
-    private Future<NetbianProperty> initConfig() {
+    private Future<NetbianProperty> init() {
         JsonObject netbian = this.config().getJsonObject("netbian");
         try {
             return Future.succeededFuture(netbian.mapTo(NetbianProperty.class));
@@ -66,7 +66,7 @@ public class NetbianVerticle extends AbstractVerticle {
     }
 
 
-    private void initWallpaperType(String mainUrl) {
+    private Future<Void> initWallpaperType(String mainUrl) {
         Connection connect = Jsoup.connect(mainUrl);
         try {
             Elements wallpaperTypeLink = connect.get().select(JsoupConstants.A_HREF);
@@ -80,8 +80,9 @@ public class NetbianVerticle extends AbstractVerticle {
                     this.wallpaperTypeMap.put(type, url);
                 }
             }
+            return Future.succeededFuture();
         } catch (IOException e) {
-            log.error(e.getMessage(), e.getCause());
+            return Future.failedFuture(e);
         }
     }
 
@@ -95,42 +96,53 @@ public class NetbianVerticle extends AbstractVerticle {
     }
 
     protected Future<Void> begin() {
-        this.initWallpaperType(this.property.getUrl());
-        if (!this.property.getStore()) {
-            for (Map.Entry<String, String> entry : this.wallpaperTypeMap.entrySet()) {
-                try {
-                    this.beginExecutor(entry.getKey(), entry.getValue());
-                } catch (IOException e) {
-                    log.error(e);
-                    return Future.failedFuture(e);
+        return this.initWallpaperType(this.property.getUrl())
+                   .compose(v -> {
+                       if (!this.property.getStore()) {
+                           for (Map.Entry<String, String> entry : this.wallpaperTypeMap.entrySet()) {
+                               final var future = this.beginExecutor(entry.getKey(), entry.getValue());
+                               if (!future.succeeded()) {
+                                   return future;
+                               }
+                           }
+                       }
+                       return Future.succeededFuture();
+                   });
+    }
+
+    protected Future<Void> beginExecutor(String type, String url) {
+        try {
+            var pageDocument = Jsoup.connect(url)
+                                    .get();
+            var pageElement = pageDocument.select(NetbianConstants.HREF_IMAGE);
+            for (Element element : pageElement) {
+                var wallpaperPageUrl = element.attr(JsoupConstants.ABS_HREF);
+                var wallpaperId = Jsoup.connect(wallpaperPageUrl)
+                                       .get()
+                                       .getElementsByAttribute(NetbianConstants.DATA_ID)
+                                       .attr(NetbianConstants.DATA_ID);
+                if (DbStoreUtil.checkNetbianWallpaperId(this.property.getSelectDataIdSql(), wallpaperId)) {
+                    if (!this.beginDownload(wallpaperId, type)) {
+                        return Future.failedFuture("invalid cookie：" + this.property.getCookie());
+                    }
                 }
             }
-        }
-        return Future.succeededFuture();
-    }
 
-    protected void beginExecutor(String type, String url) throws IOException {
-        var pageDocument = Jsoup.connect(url).get();
-        var pageElement = pageDocument.select(NetbianConstants.HREF_IMAGE);
-        for (Element element : pageElement) {
-            var wallpaperPageUrl = element.attr(JsoupConstants.ABS_HREF);
-            final String wallpaperId = Jsoup.connect(wallpaperPageUrl)
-                                            .get().getElementsByAttribute(NetbianConstants.DATA_ID)
-                                            .attr(NetbianConstants.DATA_ID);
-            this.beginDownload(wallpaperId, type);
-        }
-
-        var nextPageUrl = pageDocument.getElementsContainingOwnText(NetbianConstants.NEXT_PAGE)
-                                      .attr(JsoupConstants.ABS_HREF);
-        if (!StringUtil.isBlank(nextPageUrl)) {
-            this.beginExecutor(type, nextPageUrl);
+            var nextPageUrl = pageDocument.getElementsContainingOwnText(NetbianConstants.NEXT_PAGE)
+                                          .attr(JsoupConstants.ABS_HREF);
+            if (!StringUtil.isBlank(nextPageUrl)) {
+                return this.beginExecutor(type, nextPageUrl);
+            }
+            return Future.succeededFuture();
+        } catch (Exception e) {
+            return Future.failedFuture(e);
         }
     }
 
-    protected void beginDownload(String wallpaperId, String type) {
+    protected boolean beginDownload(String wallpaperId, String type) {
         String downloadUri = this.extractDownloadUri(wallpaperId);
         if (StringUtil.isBlank(downloadUri)) {
-            return;
+            return false;
         }
         String url = this.property.getUrl() + downloadUri;
         log.info("Download link：" + url);
@@ -141,36 +153,48 @@ public class NetbianVerticle extends AbstractVerticle {
                                          .build();
         try {
             HttpResponse<InputStream> httpResponse = this.httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
-
             var header = httpResponse.headers()
                                      .firstValue("Content-Disposition")
                                      .orElse(UUID.randomUUID().toString());
-            String fileNameFromDisposition = HttpUtil.getFileNameFromDisposition(header);
+            var fileNameFromDisposition = HttpUtil.getFileNameFromDisposition(header);
             if (fileNameFromDisposition != null) {
-                try {
-                    fileNameFromDisposition = new String(fileNameFromDisposition.getBytes(StandardCharsets.ISO_8859_1), "GB2312");
-                    var path = this.getWallpaperFile(type, fileNameFromDisposition);
-                    try(var inputStream = httpResponse.body();
-                        final var bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(path.toFile()))
-                    ) {
-                        byte[] data = new byte[4 * 1024];
-                        int len;
-                        while ((len = inputStream.read(data)) != -1) {
-                            bufferedOutputStream.write(data, 0, len);
+                fileNameFromDisposition = new String(fileNameFromDisposition.getBytes(StandardCharsets.ISO_8859_1), "GB2312");
+                var wallpaperFile = this.getWallpaperFile(type, fileNameFromDisposition);
+                try(var inputStream = httpResponse.body();
+                    final var bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(wallpaperFile))
+                ) {
+                    byte[] data = new byte[4 * 1024];
+                    int len;
+                    while ((len = inputStream.read(data)) != -1) {
+                        bufferedOutputStream.write(data, 0, len);
+                    }
+                    var netbianEntity = new NetbianEntity()
+                            .setType(type)
+                            .setName(fileNameFromDisposition)
+                            .setDataId(wallpaperId);
+                    if (!DbStoreUtil.insertNetbianEntity(this.property.getInsertNetbianSql(), netbianEntity)) {
+                        if (!Files.deleteIfExists(Paths.get(wallpaperFile.getAbsolutePath()))) {
+                            log.warn("delete file: " + wallpaperFile.getAbsolutePath());
                         }
                     }
-                } catch (UnsupportedEncodingException e) {
-                    throw new RuntimeException(e);
+                    log.info("the file：" + fileNameFromDisposition + "download complete!");
+                    return true;
                 }
             }
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException("download failed");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
+        return false;
     }
 
-    private Path getWallpaperFile(String type, String filename) {
-        return Paths.get(this.USER_HOME, this.property.getWallpaperDirName(), type, filename);
+    private File getWallpaperFile(String type, String filename) {
+        final var path = Path.of(this.USER_HOME, this.property.getWallpaperDirName(), type);
+        try {
+            Files.createDirectories(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return Paths.get(path.toAbsolutePath().toFile().getAbsolutePath(), filename).toFile();
     }
 
 
@@ -191,7 +215,7 @@ public class NetbianVerticle extends AbstractVerticle {
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         this.wallpaperType.clear();
         this.wallpaperTypeMap.clear();
     }
