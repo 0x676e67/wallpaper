@@ -1,6 +1,5 @@
 package com.zf1976.wallpaper.property;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**

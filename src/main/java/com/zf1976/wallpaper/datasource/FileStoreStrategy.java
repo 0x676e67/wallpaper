@@ -1,6 +1,5 @@
 package com.zf1976.wallpaper.datasource;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
