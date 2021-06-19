@@ -2,13 +2,15 @@ package com.zf1976.wallpaper.entity;
 
 import io.vertx.codegen.annotations.DataObject;
 
+import java.io.Serializable;
+
 
 /**
  * @author mac
  * Create by Ant on 2020/8/19 下午6:17
  */
 @DataObject
-public class NetbianEntity {
+public class NetbianEntity implements Serializable {
 
     private Integer id;
 

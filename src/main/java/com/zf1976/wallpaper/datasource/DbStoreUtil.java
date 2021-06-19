@@ -2,7 +2,6 @@ package com.zf1976.wallpaper.datasource;
 
 import com.zf1976.wallpaper.datasource.settings.DataSourceSetting;
 import com.zf1976.wallpaper.entity.NetbianEntity;
-
 import java.sql.*;
 
 /**
@@ -25,8 +24,7 @@ public class DbStoreUtil {
              final var preparedStatement = connection.prepareStatement(sql)
         ) {
             preparedStatement.setString(1, wallpaperId);
-            return preparedStatement.executeQuery()
-                                    .next();
+            return !preparedStatement.executeQuery().next();
         } catch (SQLException | ClassNotFoundException exception) {
             exception.printStackTrace();
         }
@@ -46,4 +44,6 @@ public class DbStoreUtil {
         }
         return false;
     }
+
+
 }

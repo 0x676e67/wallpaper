@@ -6,6 +6,7 @@ import com.zf1976.wallpaper.datasource.DbStoreUtil;
 import com.zf1976.wallpaper.entity.NetbianEntity;
 import com.zf1976.wallpaper.enums.NetBianType;
 import com.zf1976.wallpaper.property.NetbianProperty;
+import com.zf1976.wallpaper.support.PrintProgressBar;
 import com.zf1976.wallpaper.util.HttpUtil;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
@@ -26,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author mac
@@ -57,9 +59,8 @@ public class NetbianVerticle extends AbstractVerticle {
     }
 
     private Future<NetbianProperty> init() {
-        JsonObject netbian = this.config().getJsonObject("netbian");
         try {
-            return Future.succeededFuture(netbian.mapTo(NetbianProperty.class));
+            return Future.succeededFuture(this.config().mapTo(NetbianProperty.class));
         } catch (Exception e) {
             return Future.failedFuture(e);
         }
@@ -70,14 +71,25 @@ public class NetbianVerticle extends AbstractVerticle {
         Connection connect = Jsoup.connect(mainUrl);
         try {
             Elements wallpaperTypeLink = connect.get().select(JsoupConstants.A_HREF);
-            for (NetBianType type : NetBianType.values()) {
-                this.wallpaperType.add(type.description);
-            }
-            for (Element link : wallpaperTypeLink) {
-                final String url = link.attr(JsoupConstants.ABS_HREF);
-                final String type = trim(link.text());
-                if (this.wallpaperType.contains(type)) {
-                    this.wallpaperTypeMap.put(type, url);
+            if (this.property.getNetbianType().isEmpty()){
+                for (NetBianType type : NetBianType.values()) {
+                    this.wallpaperType.add(type.description);
+                }
+                for (Element link : wallpaperTypeLink) {
+                    final String url = link.attr(JsoupConstants.ABS_HREF);
+                    final String type = trim(link.text());
+                    if (this.wallpaperType.contains(type)) {
+                        this.wallpaperTypeMap.put(type, url);
+                    }
+                }
+            } else {
+                this.wallpaperType.addAll(this.property.getNetbianType());
+                for (Element link : wallpaperTypeLink) {
+                    final String url = link.attr(JsoupConstants.ABS_HREF);
+                    final String type = trim(link.text());
+                    if (this.wallpaperType.contains(type)) {
+                        this.wallpaperTypeMap.put(type, url);
+                    }
                 }
             }
             return Future.succeededFuture();
@@ -145,7 +157,6 @@ public class NetbianVerticle extends AbstractVerticle {
             return false;
         }
         String url = this.property.getUrl() + downloadUri;
-        log.info("Download link：" + url);
         HttpRequest request = HttpRequest.newBuilder()
                                          .GET()
                                          .uri(URI.create(url))
@@ -153,19 +164,26 @@ public class NetbianVerticle extends AbstractVerticle {
                                          .build();
         try {
             HttpResponse<InputStream> httpResponse = this.httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
-            var header = httpResponse.headers()
+            var filenameHeader = httpResponse.headers()
                                      .firstValue("Content-Disposition")
                                      .orElse(UUID.randomUUID().toString());
-            var fileNameFromDisposition = HttpUtil.getFileNameFromDisposition(header);
+            var contentLength = httpResponse.headers()
+                                .firstValue("content-length")
+                                .orElseThrow();
+            var fileNameFromDisposition = HttpUtil.getFileNameFromDisposition(filenameHeader);
             if (fileNameFromDisposition != null) {
                 fileNameFromDisposition = new String(fileNameFromDisposition.getBytes(StandardCharsets.ISO_8859_1), "GB2312");
                 var wallpaperFile = this.getWallpaperFile(type, fileNameFromDisposition);
                 try(var inputStream = httpResponse.body();
                     final var bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(wallpaperFile))
                 ) {
+                    log.info("The file：" + fileNameFromDisposition + "download complete!");
+                    log.info("Download link：" + url);
                     byte[] data = new byte[4 * 1024];
                     int len;
+                    PrintProgressBar printProgressBar = new PrintProgressBar(Long.parseLong(contentLength));
                     while ((len = inputStream.read(data)) != -1) {
+                        printProgressBar.printAppend(len);
                         bufferedOutputStream.write(data, 0, len);
                     }
                     var netbianEntity = new NetbianEntity()
@@ -177,7 +195,7 @@ public class NetbianVerticle extends AbstractVerticle {
                             log.warn("delete file: " + wallpaperFile.getAbsolutePath());
                         }
                     }
-                    log.info("the file：" + fileNameFromDisposition + "download complete!");
+                    TimeUnit.SECONDS.sleep(6);
                     return true;
                 }
             }
@@ -213,6 +231,7 @@ public class NetbianVerticle extends AbstractVerticle {
             return null;
         }
     }
+
 
     @Override
     public void stop() {

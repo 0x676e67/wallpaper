@@ -1,5 +1,8 @@
 package com.zf1976.wallpaper.property;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author mac
  * @date 2021/6/14
@@ -38,6 +41,16 @@ public class NetbianProperty {
     private String selectDataIdSql;
 
     private String insertNetbianSql;
+
+    private List<String> netbianType;
+
+    public List<String> getNetbianType() {
+        return netbianType;
+    }
+
+    public void setNetbianType(List<String> netbianType) {
+        this.netbianType = netbianType;
+    }
 
     public String getInsertNetbianSql() {
         return insertNetbianSql;
@@ -132,6 +145,7 @@ public class NetbianProperty {
                 ", record=" + record +
                 ", selectDataIdSql='" + selectDataIdSql + '\'' +
                 ", insertNetbianSql='" + insertNetbianSql + '\'' +
+                ", netbianType=" + netbianType +
                 '}';
     }
 }

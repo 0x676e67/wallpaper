@@ -4,6 +4,7 @@ package com.zf1976.wallpaper.support;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Paths;
 
 /**
  * @author mac
@@ -123,7 +124,7 @@ public class PrintProgressBar {
      * 核心方法
      * @param count 当前完成的数量
      */
-    public void print(long count) {
+    public synchronized void print(long count) {
         //开始计时
         if (timeStart == 0) {
             timeStart = speedStart = System.currentTimeMillis();
@@ -159,7 +160,7 @@ public class PrintProgressBar {
         //不换行进行覆盖
         //打印进度条
         if (printProgressBar){
-            stringBuilder.append("[");
+            stringBuilder.append("Progress [");
             for (int i = 0; i < percentage; i++) {
                 stringBuilder.append("=");
             }
@@ -235,7 +236,7 @@ public class PrintProgressBar {
     /**
      * 打印总耗时和平均每秒速度
      */
-    public void printTime() {
+    public synchronized void printTime() {
         //设置结束时间
         if (timeEnd == 0) {
             timeEnd = System.currentTimeMillis();
@@ -364,7 +365,7 @@ public class PrintProgressBar {
 //                .setAutoPrintTime(false)//取消完成后自动打印总耗时和平均每秒速度
 //                .setPrint100(false)//增加打印次数, 实时监控, 对性能有略微影响(在我的渣渣机子上打印20亿次仅影响10秒)
 //                .setConversion("字节")//自定义单位(此配置需要关闭字节转换才有效果)
-        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream("/users/mac/desktop/" + fileName));
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(Paths.get(System.getProperty("user.home"),fileName).toFile()));
         byte[] data = new byte [urlConnection.getContentLength()];
         int len =0;
         while ((len = inputStream.read(data)) != -1) {
