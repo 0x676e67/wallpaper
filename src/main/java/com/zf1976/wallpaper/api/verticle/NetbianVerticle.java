@@ -8,7 +8,9 @@ import com.zf1976.wallpaper.enums.NetBianType;
 import com.zf1976.wallpaper.property.NetbianProperty;
 import com.zf1976.wallpaper.support.PrintProgressBar;
 import com.zf1976.wallpaper.util.HttpUtil;
-import io.vertx.core.*;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
@@ -165,44 +167,42 @@ public class NetbianVerticle extends AbstractVerticle {
         try {
             HttpResponse<InputStream> httpResponse = this.httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
             var filenameHeader = httpResponse.headers()
-                                     .firstValue("Content-Disposition")
-                                     .orElse(UUID.randomUUID().toString());
+                                             .firstValue("Content-Disposition")
+                                             .orElse(UUID.randomUUID()
+                                                         .toString());
             var contentLength = httpResponse.headers()
-                                .firstValue("content-length")
-                                .orElseThrow();
-            var fileNameFromDisposition = HttpUtil.getFileNameFromDisposition(filenameHeader);
-            if (fileNameFromDisposition != null) {
-                fileNameFromDisposition = new String(fileNameFromDisposition.getBytes(StandardCharsets.ISO_8859_1), "GB2312");
-                var wallpaperFile = this.getWallpaperFile(type, fileNameFromDisposition);
-                try(var inputStream = httpResponse.body();
-                    final var bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(wallpaperFile))
-                ) {
-                    log.info("The file：" + fileNameFromDisposition + "download complete!");
-                    log.info("Download link：" + url);
-                    byte[] data = new byte[4 * 1024];
-                    int len;
-                    PrintProgressBar printProgressBar = new PrintProgressBar(Long.parseLong(contentLength));
-                    while ((len = inputStream.read(data)) != -1) {
-                        printProgressBar.printAppend(len);
-                        bufferedOutputStream.write(data, 0, len);
-                    }
-                    var netbianEntity = new NetbianEntity()
-                            .setType(type)
-                            .setName(fileNameFromDisposition)
-                            .setDataId(wallpaperId);
-                    if (!DbStoreUtil.insertNetbianEntity(this.property.getInsertNetbianSql(), netbianEntity)) {
-                        if (!Files.deleteIfExists(Paths.get(wallpaperFile.getAbsolutePath()))) {
-                            log.warn("delete file: " + wallpaperFile.getAbsolutePath());
-                        }
-                    }
-                    TimeUnit.SECONDS.sleep(6);
-                    return true;
+                                            .firstValue("content-length")
+                                            .orElseThrow();
+            final var fileNameFromDisposition = HttpUtil.getFileNameFromDisposition(filenameHeader);
+            final var filename = fileNameFromDisposition != null ? new String(fileNameFromDisposition.getBytes(StandardCharsets.ISO_8859_1), "GB2312") : filenameHeader;
+            var wallpaperFile = this.getWallpaperFile(type, filename);
+            try (var inputStream = httpResponse.body();
+                 final var bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(wallpaperFile))
+            ) {
+                log.info("The file：" + filename + "download complete!");
+                log.info("Download link：" + url);
+                byte[] data = new byte[4 * 1024];
+                int len;
+                PrintProgressBar printProgressBar = new PrintProgressBar(Long.parseLong(contentLength));
+                while ((len = inputStream.read(data)) != -1) {
+                    printProgressBar.printAppend(len);
+                    bufferedOutputStream.write(data, 0, len);
                 }
+                var netbianEntity = new NetbianEntity()
+                        .setType(type)
+                        .setName(filename)
+                        .setDataId(wallpaperId);
+                if (!DbStoreUtil.insertNetbianEntity(this.property.getInsertNetbianSql(), netbianEntity)) {
+                    if (!Files.deleteIfExists(Paths.get(wallpaperFile.getAbsolutePath()))) {
+                        log.warn("delete file: " + wallpaperFile.getAbsolutePath());
+                    }
+                }
+                TimeUnit.SECONDS.sleep(6);
+                return true;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return false;
     }
 
     private File getWallpaperFile(String type, String filename) {
