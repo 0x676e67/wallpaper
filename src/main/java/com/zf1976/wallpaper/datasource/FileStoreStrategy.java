@@ -9,4 +9,5 @@ public interface FileStoreStrategy<T> {
 
     List<T> read() throws IOException, ClassNotFoundException;
 
+    boolean container(T t);
 }
