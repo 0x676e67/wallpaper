@@ -94,4 +94,10 @@ public class NetbianStoreStrategy implements FileStoreStrategy<NetbianEntity> {
         return false;
     }
 
+    @Override
+    public boolean container(String id) {
+        var netbianEntity = new NetbianEntity().setDataId(id);
+        return this.container(netbianEntity);
+    }
+
 }

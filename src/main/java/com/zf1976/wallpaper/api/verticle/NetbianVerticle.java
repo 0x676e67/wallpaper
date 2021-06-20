@@ -2,7 +2,8 @@ package com.zf1976.wallpaper.api.verticle;
 
 import com.zf1976.wallpaper.api.constants.JsoupConstants;
 import com.zf1976.wallpaper.api.constants.NetbianConstants;
-import com.zf1976.wallpaper.datasource.DbStoreUtil;
+import com.zf1976.wallpaper.datasource.FileStoreStrategy;
+import com.zf1976.wallpaper.datasource.NetbianStoreStrategy;
 import com.zf1976.wallpaper.entity.NetbianEntity;
 import com.zf1976.wallpaper.enums.NetBianType;
 import com.zf1976.wallpaper.property.NetbianProperty;
@@ -44,6 +45,7 @@ public class NetbianVerticle extends AbstractVerticle {
     private NetbianProperty property;
     protected HttpClient httpClient = HttpClient.newHttpClient();
     protected final String USER_HOME = System.getProperty("user.home");
+    protected final FileStoreStrategy<NetbianEntity> fileStoreStrategy = new NetbianStoreStrategy();
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
@@ -135,7 +137,7 @@ public class NetbianVerticle extends AbstractVerticle {
                                        .get()
                                        .getElementsByAttribute(NetbianConstants.DATA_ID)
                                        .attr(NetbianConstants.DATA_ID);
-                if (DbStoreUtil.checkNetbianWallpaperId(this.property.getSelectDataIdSql(), wallpaperId)) {
+                if (!this.fileStoreStrategy.container(wallpaperId)) {
                     if (!this.beginDownload(wallpaperId, type)) {
                         return Future.failedFuture("invalid cookie：" + this.property.getCookie());
                     }
@@ -192,11 +194,7 @@ public class NetbianVerticle extends AbstractVerticle {
                         .setType(type)
                         .setName(filename)
                         .setDataId(wallpaperId);
-                if (!DbStoreUtil.insertNetbianEntity(this.property.getInsertNetbianSql(), netbianEntity)) {
-                    if (!Files.deleteIfExists(Paths.get(wallpaperFile.getAbsolutePath()))) {
-                        log.warn("delete file: " + wallpaperFile.getAbsolutePath());
-                    }
-                }
+                this.fileStoreStrategy.store(netbianEntity);
                 TimeUnit.SECONDS.sleep(6);
                 return true;
             }
