@@ -44,13 +44,8 @@ public class NetbianStoreStrategy implements FileStoreStrategy<NetbianEntity> {
             throw new RuntimeException("dataId cannot been null!");
         }
         if (!this.container(netbianEntity)) {
-            try {
-                FileOutputStream fos = new FileOutputStream(file, true);
-                if (file.length() <= 0) {
-                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(fos);
-                    objectOutputStream.writeObject(netbianEntity);
-                    objectOutputStream.close();
-                } else {
+            try (FileOutputStream fos = new FileOutputStream(file, true)) {
+                if (file.length() > 0) {
                     var objectOutputStream = new ObjectOutputStream(fos) {
                         @Override
                         protected void writeStreamHeader() {
@@ -58,8 +53,11 @@ public class NetbianStoreStrategy implements FileStoreStrategy<NetbianEntity> {
                     };
                     objectOutputStream.writeObject(netbianEntity);
                     objectOutputStream.close();
+                } else {
+                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(fos);
+                    objectOutputStream.writeObject(netbianEntity);
+                    objectOutputStream.close();
                 }
-                fos.close();
             } catch (IOException e) {
                 log.error(e.getMessage(), e.getCause());
             }
@@ -69,12 +67,16 @@ public class NetbianStoreStrategy implements FileStoreStrategy<NetbianEntity> {
     @Override
     public List<NetbianEntity> read() {
         List<NetbianEntity> list = new ArrayList<>();
-        try (FileInputStream fis = new FileInputStream(file);
-             ObjectInputStream ois = new ObjectInputStream(fis)) {
+        try (FileInputStream fis = new FileInputStream(file)) {
+            if (fis.available() <= 0) {
+                return Collections.emptyList();
+            }
+            ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(fis));
             while (fis.available() > 0) {
                 NetbianEntity netbianEntity = (NetbianEntity) ois.readObject();
                 list.add(netbianEntity);
             }
+            ois.close();
             return list;
         } catch (ClassNotFoundException | IOException e) {
             log.error(e.getMessage(), e.getCause());
