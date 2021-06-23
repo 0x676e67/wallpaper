@@ -90,8 +90,8 @@ public class NetbianStoreStrategy implements FileStoreStrategy<NetbianEntity> {
         var netbianEntityList = this.read();
         if (!netbianEntityList.isEmpty()) {
             return netbianEntityList.stream()
-                                    .anyMatch(var -> netbianEntity.getDataId()
-                                                                  .equals(var.getDataId()));
+                                    .anyMatch(var -> var.getDataId()
+                                                        .equals(netbianEntity.getDataId()));
         }
         return false;
     }
