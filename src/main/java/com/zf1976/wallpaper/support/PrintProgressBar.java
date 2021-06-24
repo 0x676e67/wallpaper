@@ -124,7 +124,7 @@ public class PrintProgressBar {
      * 核心方法
      * @param count 当前完成的数量
      */
-    public synchronized void print(long count) {
+    public void print(long count) {
         //开始计时
         if (timeStart == 0) {
             timeStart = speedStart = System.currentTimeMillis();
@@ -236,7 +236,7 @@ public class PrintProgressBar {
     /**
      * 打印总耗时和平均每秒速度
      */
-    public synchronized void printTime() {
+    public void printTime() {
         //设置结束时间
         if (timeEnd == 0) {
             timeEnd = System.currentTimeMillis();

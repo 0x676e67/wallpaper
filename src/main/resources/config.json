@@ -10,7 +10,7 @@
     "store": false,
     "selectDataIdSql" : "SELECT data_id as dataId,name,type,id from index_entity WHERE data_id = ?",
     "insertNetbianSql" : "INSERT INTO `index_entity`(data_id, name, type) VALUES (?, ?, ?)",
-    "netbianType" : []
+    "netbianType" : ["4K美女"]
   },
   "wallhaven" : "https://www.baidu.com"
 }

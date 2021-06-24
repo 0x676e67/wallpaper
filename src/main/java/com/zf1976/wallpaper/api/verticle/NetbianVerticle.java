@@ -191,7 +191,7 @@ public class NetbianVerticle extends AbstractVerticle {
                     bufferedOutputStream.write(data, 0, len);
                 }
                 log.info("The file：" + filename + " download complete!");
-                System.out.println("==============================================================================================================================\n");
+                System.out.println("=====================================================================================================================================================\n");
                 var netbianEntity = new NetbianEntity()
                         .setType(type)
                         .setName(filename)
