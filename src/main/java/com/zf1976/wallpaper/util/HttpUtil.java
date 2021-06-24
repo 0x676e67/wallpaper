@@ -10,7 +10,14 @@ import java.util.regex.Pattern;
 public class HttpUtil {
 
     private static final Pattern FILENAME_PATTERN = Pattern.compile("filename=\"(.*?)\"");
+    private static final Pattern URL_PATTERN = Pattern.compile("[/].*");
 
+    public static boolean isUri(String uri) {
+        if (uri != null) {
+            return URL_PATTERN.matcher(uri).matches();
+        }
+        return false;
+    }
 
     /**
      * 从Content-Disposition头中获取文件名

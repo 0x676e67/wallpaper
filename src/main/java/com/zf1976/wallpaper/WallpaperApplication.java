@@ -27,12 +27,8 @@ public class WallpaperApplication {
                 .setConfig(new JsonObject()
                         .put("path", "config.json")
                 );
-        final var customNetbianType = new ConfigStoreOptions()
-                .setType("json")
-                .setConfig(new JsonObject().put("netbianType", args));
         final ConfigRetrieverOptions configRetrieverOptions = new ConfigRetrieverOptions()
-                .addStore(localConfigStore)
-                .addStore(customNetbianType);
+                .addStore(localConfigStore);
         final Vertx vertx = Vertx.vertx(new VertxOptions().setBlockedThreadCheckIntervalUnit(TimeUnit.DAYS));
         ConfigRetriever configRetriever = ConfigRetriever.create(vertx, configRetrieverOptions);
         configRetriever.listen(event -> {
@@ -43,9 +39,10 @@ public class WallpaperApplication {
             if (config.failed()) {
                 log.error("Failed to get configuration");
             } else {
-                JsonObject netbian = config.result()
-                                           .getJsonObject("netbian");
-                netbian.put("netbianType", Arrays.asList(args));
+                JsonObject netbian = config.result().getJsonObject("netbian");
+                if (args.length > 0) {
+                    netbian.put("netbianType", Arrays.asList(args));
+                }
                 Future.<Void>succeededFuture()
                       .compose(v -> vertx.deployVerticle(NetbianVerticle.class.getName(), new DeploymentOptions().setWorker(true).setConfig(netbian)))
                       .onSuccess(deployId -> {

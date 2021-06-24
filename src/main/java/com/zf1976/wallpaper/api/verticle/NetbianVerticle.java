@@ -117,7 +117,7 @@ public class NetbianVerticle extends AbstractVerticle {
                        if (!this.property.getStore()) {
                            for (Map.Entry<String, String> entry : this.wallpaperTypeMap.entrySet()) {
                                final var future = this.beginExecutor(entry.getKey(), entry.getValue());
-                               if (!future.succeeded()) {
+                               if (future.failed()) {
                                    return future;
                                }
                            }
@@ -138,17 +138,16 @@ public class NetbianVerticle extends AbstractVerticle {
                                        .getElementsByAttribute(NetbianConstants.DATA_ID)
                                        .attr(NetbianConstants.DATA_ID);
                 if (!this.fileStoreStrategy.container(wallpaperId)) {
-                    if (!this.beginDownload(wallpaperId, type)) {
-                        return Future.failedFuture("invalid cookie：" + this.property.getCookie());
+                    final var future = this.beginDownload(wallpaperId, type);
+                    if (future.failed()) {
+                        return future;
                     }
                 }
             }
 
-            var nextPageUrl = pageDocument.getElementsContainingOwnText(NetbianConstants.NEXT_PAGE)
-                                          .attr(JsoupConstants.ABS_HREF);
+            var nextPageUrl = pageDocument.getElementsContainingOwnText(NetbianConstants.NEXT_PAGE).attr(JsoupConstants.ABS_HREF);
             if (!StringUtil.isBlank(nextPageUrl)) {
                 return this.beginExecutor(type, nextPageUrl);
-
             }
             return Future.succeededFuture();
         } catch (Exception e) {
@@ -156,11 +155,17 @@ public class NetbianVerticle extends AbstractVerticle {
         }
     }
 
-    protected boolean beginDownload(String wallpaperId, String type) {
-        String downloadUri = this.extractDownloadUri(wallpaperId);
-        if (StringUtil.isBlank(downloadUri)) {
-            return false;
-        }
+    protected Future<Void> beginDownload(String wallpaperId, String type) {
+        return this.extractDownloadUri(wallpaperId)
+                   .compose(str -> {
+                       if (HttpUtil.isUri(str)) {
+                           return this.download(str, wallpaperId, type);
+                       }
+                       return Future.failedFuture(str);
+                   });
+    }
+
+    protected Future<Void> download(String downloadUri, String wallpaperId, String type) {
         String url = this.property.getUrl() + downloadUri;
         HttpRequest request = HttpRequest.newBuilder()
                                          .GET()
@@ -190,18 +195,18 @@ public class NetbianVerticle extends AbstractVerticle {
                     printProgressBar.printAppend(len);
                     bufferedOutputStream.write(data, 0, len);
                 }
-                log.info("The file：" + filename + " download complete!");
-                System.out.println("=====================================================================================================================================================\n");
+                log.info("The wallpaper：" + filename + " download complete!");
+                System.out.println("=====================================================================COMPLETE====================================================================\n");
                 var netbianEntity = new NetbianEntity()
                         .setType(type)
                         .setName(filename)
                         .setDataId(wallpaperId);
                 this.fileStoreStrategy.store(netbianEntity);
-                TimeUnit.SECONDS.sleep(6);
-                return true;
+                TimeUnit.SECONDS.sleep(3);
+                return Future.succeededFuture();
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return Future.failedFuture(e);
         }
     }
 
@@ -224,23 +229,31 @@ public class NetbianVerticle extends AbstractVerticle {
         return Paths.get(path.toAbsolutePath().toFile().getAbsolutePath(), filename).toFile();
     }
 
-
-    protected String extractDownloadUri(String wallpaperId){
+    protected Future<String> extractDownloadUri(String wallpaperId) {
         String url = this.property.getInfoUrl() + "?t=" + Math.random() + "&id=" + wallpaperId;
         HttpRequest request = HttpRequest.newBuilder()
-                                        .GET()
-                                        .uri(URI.create(url))
-                                        .headers("cookie", this.property.getCookie())
-                                        .build();
+                                         .GET()
+                                         .uri(URI.create(url))
+                                         .headers("cookie", this.property.getCookie())
+                                         .build();
         try {
-            String body = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-                                         .body();
-            return new JsonObject(body).getString(NetbianConstants.PIC);
+            String body = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body();
+            final var json = new JsonObject(body);
+            final var wallpaperDownloadUri = json.getString(NetbianConstants.PIC);
+            final var info = json.getString(NetbianConstants.INFO);
+            if (wallpaperDownloadUri != null && !wallpaperDownloadUri.isBlank()) {
+                return Future.succeededFuture(wallpaperDownloadUri);
+            }
+            if (info != null && !info.isBlank()) {
+                log.info(info);
+                TimeUnit.DAYS.sleep(1);
+                return this.extractDownloadUri(wallpaperId);
+            }
+            return Future.failedFuture("Invalid cookie: " + this.property.getCookie());
         } catch (IOException | InterruptedException e) {
-            return null;
+            return Future.failedFuture(e);
         }
     }
-
 
     @Override
     public void stop() {

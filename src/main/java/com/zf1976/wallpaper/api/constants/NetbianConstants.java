@@ -16,4 +16,7 @@ public interface NetbianConstants {
 
     String PIC = "pic";
 
+    String MSG = "msg";
+
+    String INFO = "info";
 }
