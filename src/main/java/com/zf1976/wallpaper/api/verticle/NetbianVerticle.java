@@ -48,7 +48,7 @@ public class NetbianVerticle extends AbstractVerticle {
     protected final FileStoreStrategy<NetbianEntity> fileStoreStrategy = new NetbianStoreStrategy();
 
     @Override
-    public void start(Promise<Void> startPromise) throws Exception {
+    public void start(Promise<Void> startPromise) {
         NetbianVerticle that = this;
         this.init()
             .compose(property -> {
@@ -170,8 +170,7 @@ public class NetbianVerticle extends AbstractVerticle {
             HttpResponse<InputStream> httpResponse = this.httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
             var filenameHeader = httpResponse.headers()
                                              .firstValue("Content-Disposition")
-                                             .orElse(UUID.randomUUID()
-                                                         .toString());
+                                             .orElse(UUID.randomUUID().toString());
             var contentLength = httpResponse.headers()
                                             .firstValue("content-length")
                                             .orElseThrow();
@@ -181,7 +180,7 @@ public class NetbianVerticle extends AbstractVerticle {
             try (var inputStream = httpResponse.body();
                  final var bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(wallpaperFile))
             ) {
-                log.info("The file：" + filename + "download complete!");
+                log.info("The file：" + filename + " download complete!");
                 log.info("Download link：" + url);
                 byte[] data = new byte[4 * 1024];
                 int len;
@@ -204,7 +203,16 @@ public class NetbianVerticle extends AbstractVerticle {
     }
 
     private File getWallpaperFile(String type, String filename) {
-        final var path = Path.of(this.USER_HOME, this.property.getWallpaperDirName(), type);
+        final var parentDir = this.property.getParentDir();
+        final Path path;
+        if (parentDir != null && !parentDir.isBlank()) {
+            if (!Paths.get(parentDir).toFile().exists()) {
+                throw new RuntimeException("parent directory cannot been empty");
+            }
+            path = Paths.get(parentDir, this.property.getWallpaperDirName(), type);
+        } else {
+            path = Paths.get(this.USER_HOME, this.property.getWallpaperDirName(), type);
+        }
         try {
             Files.createDirectories(path);
         } catch (IOException e) {

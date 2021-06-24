@@ -52,4 +52,12 @@ public class Test {
             e.printStackTrace();
         }
     }
+
+    @org.junit.Test
+    public void strTest() {
+        var str = "111";
+        System.out.println(str.isEmpty());
+        System.out.println(str.isBlank());
+
+    }
 }

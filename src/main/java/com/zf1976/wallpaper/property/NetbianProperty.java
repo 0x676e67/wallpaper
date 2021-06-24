@@ -25,6 +25,10 @@ public class NetbianProperty {
      */
     private String wallpaperDirName;
     /**
+     * 存放壁纸父目录
+     */
+    private String parentDir;
+    /**
      * cookie
      */
     private String cookie;
@@ -57,6 +61,15 @@ public class NetbianProperty {
 
     public NetbianProperty setInsertNetbianSql(String insertNetbianSql) {
         this.insertNetbianSql = insertNetbianSql;
+        return this;
+    }
+
+    public String getParentDir() {
+        return parentDir;
+    }
+
+    public NetbianProperty setParentDir(String parentDir) {
+        this.parentDir = parentDir;
         return this;
     }
 
@@ -139,6 +152,7 @@ public class NetbianProperty {
                 ", infoUrl='" + infoUrl + '\'' +
                 ", downloadUrl='" + downloadUrl + '\'' +
                 ", wallpaperDirName='" + wallpaperDirName + '\'' +
+                ", parentDir='" + parentDir + '\'' +
                 ", cookie='" + cookie + '\'' +
                 ", store=" + store +
                 ", record=" + record +
