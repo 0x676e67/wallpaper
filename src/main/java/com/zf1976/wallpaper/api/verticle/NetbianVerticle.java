@@ -148,6 +148,7 @@ public class NetbianVerticle extends AbstractVerticle {
                                           .attr(JsoupConstants.ABS_HREF);
             if (!StringUtil.isBlank(nextPageUrl)) {
                 return this.beginExecutor(type, nextPageUrl);
+
             }
             return Future.succeededFuture();
         } catch (Exception e) {
@@ -180,7 +181,7 @@ public class NetbianVerticle extends AbstractVerticle {
             try (var inputStream = httpResponse.body();
                  final var bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(wallpaperFile))
             ) {
-                log.info("The file：" + filename + " download complete!");
+                log.info("Start downloading the file: " + filename);
                 log.info("Download link：" + url);
                 byte[] data = new byte[4 * 1024];
                 int len;
@@ -189,6 +190,8 @@ public class NetbianVerticle extends AbstractVerticle {
                     printProgressBar.printAppend(len);
                     bufferedOutputStream.write(data, 0, len);
                 }
+                log.info("The file：" + filename + " download complete!");
+                System.out.println("==============================================================================================================================\n");
                 var netbianEntity = new NetbianEntity()
                         .setType(type)
                         .setName(filename)
