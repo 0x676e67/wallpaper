@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 public class SerializeTest {
 
@@ -30,10 +31,7 @@ public class SerializeTest {
     @Test
     public void readTest() {
         final var netbianStoreStrategy = new NetbianStoreStrategy();
-        for (NetbianEntity netbianEntity : netbianStoreStrategy.read()) {
-            System.out.println(netbianEntity);
-        }
-        System.out.println(netbianStoreStrategy.read()
-                                               .size());
+        netbianStoreStrategy.read().forEach(System.out::println);
+        System.out.println(netbianStoreStrategy.container("5055"));
     }
 }

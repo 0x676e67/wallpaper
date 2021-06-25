@@ -245,7 +245,7 @@ public class NetbianVerticle extends AbstractVerticle {
                 return Future.succeededFuture(wallpaperDownloadUri);
             }
             if (info != null && !info.isBlank()) {
-                log.info(info);
+                log.info("Download limit reached today");
                 TimeUnit.DAYS.sleep(1);
                 return this.extractDownloadUri(wallpaperId);
             }
