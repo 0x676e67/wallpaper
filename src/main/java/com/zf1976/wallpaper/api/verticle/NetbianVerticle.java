@@ -196,7 +196,7 @@ public class NetbianVerticle extends AbstractVerticle {
                     bufferedOutputStream.write(data, 0, len);
                 }
                 log.info("The wallpaper：" + filename + " download complete!");
-                System.out.println("=====================================================================COMPLETE====================================================================\n");
+                System.out.println("=====================================================================ON COMPLETE====================================================================\n");
                 var netbianEntity = new NetbianEntity()
                         .setType(type)
                         .setName(filename)

@@ -186,7 +186,7 @@ public class PrintProgressBar {
         }
         //打印总大小
         if (printSize) {
-            stringBuilder.append(" 总大小: ");
+            stringBuilder.append(" TotalSize: ");
             if (byteConversion) {
                 getByteConversion(stringBuilder, size, false);
             } else {
@@ -211,7 +211,7 @@ public class PrintProgressBar {
                 //记录这次的时间, 给下次计算速度的时候提供数据
                 speedStart = speedEnd;
             }
-            stringBuilder.append(" 速度: ");
+            stringBuilder.append(" Speed: ");
             //开启单位换算
             {
                 //进制转换
@@ -252,13 +252,13 @@ public class PrintProgressBar {
             if (time / 1000 >= 60 && time / 1000 < 60 * 60) {
                 //大于等于一分钟, 小于一小时
                 conversion = 60;
-                timeConversion = "分钟";
+                timeConversion = " Minute";
             } else if (time / 1000 >= 60 * 60) {
                 //大于等于一小时
                 conversion = 60 * 60;
-                timeConversion = "小时";
+                timeConversion = " Hour";
             } else {
-                timeConversion = "秒";
+                timeConversion = " Second";
             }
         }
         //准备打印
@@ -267,7 +267,7 @@ public class PrintProgressBar {
         {
             //刚刚打印完进度条, 需要换行
             stringBuilder.append("\n");
-            stringBuilder.append("总共耗时: ");
+            stringBuilder.append("Total time consuming: ");
             //总毫秒 转换成秒在 除 转换倍率 ---> 保留两位小数点
             stringBuilder.append(String.format("%.2f", (time + 0.0) / conversion / 1000));
             stringBuilder.append(timeConversion);
@@ -277,7 +277,7 @@ public class PrintProgressBar {
             //time小于1必然发生 除0 异常
             if (time > 1) {
                 stringBuilder.append("\n");
-                stringBuilder.append("平均速度: ");
+                stringBuilder.append("Average speed: ");
                 //总大小 除 总时间(秒)
                 double byteConversionCount = size / ((time + 0.0) / 1000);
                 if (byteConversion) {
