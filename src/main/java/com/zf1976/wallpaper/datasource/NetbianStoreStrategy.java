@@ -14,8 +14,6 @@ public class NetbianStoreStrategy implements FileStoreStrategy<NetbianEntity> {
 
     private final Logger log = Logger.getLogger("[FileStoreStrategy]");
     private final File file;
-    private final List<NetbianEntity> cacheNetbianEntityList = new LinkedList<>();
-
     public NetbianStoreStrategy() {
         this(Paths.get(System.getProperty("user.home"),
                 "netbian.txt")
@@ -42,7 +40,6 @@ public class NetbianStoreStrategy implements FileStoreStrategy<NetbianEntity> {
 
     @Override
     public void store(NetbianEntity netbianEntity) {
-        this.cacheNetbianEntityList.clear();
         if (netbianEntity.getDataId() == null) {
             throw new RuntimeException("dataId cannot been null!");
         }
@@ -69,9 +66,6 @@ public class NetbianStoreStrategy implements FileStoreStrategy<NetbianEntity> {
 
     @Override
     public List<NetbianEntity> read() {
-        if (!this.cacheNetbianEntityList.isEmpty()) {
-            return this.cacheNetbianEntityList;
-        }
         List<NetbianEntity> list = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream(file)) {
             if (fis.available() <= 0) {
@@ -83,8 +77,7 @@ public class NetbianStoreStrategy implements FileStoreStrategy<NetbianEntity> {
                 list.add(netbianEntity);
             }
             ois.close();
-            this.cacheNetbianEntityList.addAll(list);
-            return this.cacheNetbianEntityList;
+            return list;
         } catch (ClassNotFoundException | IOException e) {
             log.error(e.getMessage(), e.getCause());
         }
