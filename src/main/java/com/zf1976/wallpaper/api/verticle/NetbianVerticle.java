@@ -226,6 +226,9 @@ public class NetbianVerticle extends AbstractVerticle {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        if (filename.split("/").length > 1) {
+            filename = filename.replace("/", "-");
+        }
         return Paths.get(path.toAbsolutePath().toFile().getAbsolutePath(), filename).toFile();
     }
 
