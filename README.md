@@ -3,9 +3,6 @@
 	<a target="_blank" href="https://github.com/zf1976/wallpaper/blob/dev/LICENSE">
 		<img src="https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg" ></img>
 	</a>
-	<a target="_blank" href="https://github.com/1976/wallpaper">
-		<img src="https://img.shields.io/badge/version-2.3.0-brightgreen.svg" ></img>
-	</a>
 	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
 		<img src="https://img.shields.io/badge/JDK-11+-green.svg" ></img>
 	</a>
