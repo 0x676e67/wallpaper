@@ -1,4 +1,17 @@
-### [彼岸壁纸爬虫](https://pic.netbian.com)
+### 壁纸下载器
+<p align="center">
+	<a target="_blank" href="https://github.com/zf1976/wallpaper/blob/dev/LICENSE">
+		<img src="https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg" ></img>
+	</a>
+	<a target="_blank" href="https://github.com/1976/wallpaper">
+		<img src="https://img.shields.io/badge/version-2.3.0-brightgreen.svg" ></img>
+	</a>
+	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
+		<img src="https://img.shields.io/badge/JDK-11+-green.svg" ></img>
+	</a>
+</p>
+
+
 #### 简介
 > wallpaper 是一个壁纸爬取下载程序。本项目仅需要Java11即可运行
 > 1.clone 2.修改配置文件 3.编译 4.运行
