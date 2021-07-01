@@ -5,13 +5,10 @@ import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.*;
-import io.vertx.core.buffer.impl.BufferImpl;
-import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
 import org.apache.log4j.Logger;
 
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -60,6 +57,7 @@ public class WallpaperApplication {
               })
               .onFailure(err -> {
                   log.error(err.getMessage(), err.getCause());
+                  System.exit(0);
               });
     }
 }
