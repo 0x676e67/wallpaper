@@ -42,13 +42,13 @@ public class WallpaperApplication {
                          if (bufferAsyncResult.succeeded()) {
                              conf = new JsonObject(bufferAsyncResult.result());
                          }
-                         setNetbianConfig(vertx, conf);
+                         deployNetbian(vertx, conf);
                      });
             }
         });
     }
 
-    private static void setNetbianConfig(Vertx vertx, JsonObject jsonObject) {
+    private static void deployNetbian(Vertx vertx, JsonObject jsonObject) {
         final var netbian = jsonObject.getJsonObject("netbian");
         Future.<Void>succeededFuture()
               .compose(v -> vertx.deployVerticle(NetbianVerticle.class.getName(), new DeploymentOptions().setWorker(true).setConfig(netbian)))
