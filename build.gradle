@@ -18,8 +18,8 @@ ext{
     jacksonVersion = "2.10.3"
 }
 dependencies {
-    implementation 'org.jsoup:jsoup:1.13.1'
-    implementation 'junit:junit:4.13'
+    compile 'org.jsoup:jsoup:1.13.1'
+    compile 'junit:junit:4.13'
     compile 'io.vertx:vertx-core:4.1.0'
     compile 'io.vertx:vertx-config:4.1.0'
     compile 'io.vertx:vertx-codegen:4.1.0'
@@ -49,11 +49,16 @@ publishing {
     }
 }
 
-jar{
-
-    manifest{
+//打jar包需要的配置
+jar {
+    manifest {
         attributes(
-                'Main-Class':'com.zf1976.wallpaper.Application'
+                "Manifest-Version": 1.0,
+                'Main-Class':'com.zf1976.wallpaper.WallpaperApplication'
         )
+    }
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    into('assets') {
+        from 'assets'
     }
 }
