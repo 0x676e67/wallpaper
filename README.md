@@ -10,8 +10,8 @@
 ### 壁纸下载器
 
 #### Description
-> wallpaper 是一个壁纸爬取下载程序。本项目仅需要Java11即可运行
-> 1.clone 2.修改配置文件 3.编译 4.运行
+- wallpaper 是一个壁纸爬取下载程序。本项目仅需要Java11即可运行
+- 1.clone 2.修改配置文件 3.编译 4.运行
 
 #### 支持壁纸网站（目前支持）
 - [彼岸壁纸](https://pic.netbian.com)
