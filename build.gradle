@@ -4,34 +4,11 @@
 
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.0.0'
     id 'maven-publish'
 }
-
-repositories {
-    mavenLocal()
-    maven {
-        url = uri('https://repo.maven.apache.org/maven2/')
-    }
-}
-
-ext{
-    jacksonVersion = "2.10.3"
-}
-dependencies {
-    compile 'org.jsoup:jsoup:1.13.1'
-    compile 'junit:junit:4.13'
-    compile 'io.vertx:vertx-core:4.1.0'
-    compile 'io.vertx:vertx-config:4.1.0'
-    compile 'io.vertx:vertx-codegen:4.1.0'
-    annotationProcessor "io.vertx:vertx-codegen:4.1.0:processor"
-    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-    compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
-    compile 'mysql:mysql-connector-java:8.0.21'
-    compile 'log4j:log4j:1.2.17'
-}
-
 group = 'org.zf1976'
-version = '1.0-SNAPSHOT'
+version = 'latest'
 description = 'wallpaper'
 java.sourceCompatibility = JavaVersion.VERSION_11
 
@@ -40,25 +17,25 @@ configurations {
         extendsFrom annotationProcessor
     }
 }
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from(components.java)
-        }
-    }
+repositories {
+    mavenLocal()
+    mavenCentral()
 }
 
-//打jar包需要的配置
-jar {
-    manifest {
-        attributes(
-                "Manifest-Version": 1.0,
-                'Main-Class':'com.zf1976.wallpaper.WallpaperApplication'
-        )
-    }
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    into('assets') {
-        from 'assets'
-    }
+ext{
+    jacksonVersion = '2.13.0'
 }
+dependencies {
+    implementation 'org.jsoup:jsoup:1.14.3'
+    implementation 'junit:junit:4.13.2'
+    implementation 'io.vertx:vertx-core:4.2.0'
+    implementation 'io.vertx:vertx-config:4.2.0'
+    implementation 'io.vertx:vertx-codegen:4.2.0'
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
+    implementation 'mysql:mysql-connector-java:8.0.25'
+    implementation 'log4j:log4j:1.2.17'
+    annotationProcessor 'io.vertx:vertx-codegen:4.2.0:processor'
+}
+
+
